@@ -1,4 +1,7 @@
 /.venv
 /.env
+/.vscode
+/runs
 /model/datasets
 /model/runs
+__pycache__
