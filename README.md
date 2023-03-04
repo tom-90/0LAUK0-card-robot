@@ -19,3 +19,38 @@ After the repository has been set-up, please copy the `.env.template` file and r
 All source code for the program is located in the `cardrobot` folder. The `model` folder contains all data and scripts that have to do with training the model, which are not relevant for executing the program.
 
 To execute the program, run `python cardrobot/main.py` from the root folder.
+
+
+## 'Pesten' rules
+
+As generally known, many people use a different set of rules when playing a game of "Pesten".
+Hence, we will explicitly state which rules are used for this program.
+
+The rules:
+* Playing card with rank 0, the "joker" => This is a "pestkaart", which means the next player needs to take new playing cards from the playing stack. 
+                                            In the case of a Joker, the next player needs to take 5 new playing cards from the playing stack.
+* Playing card with rank 1, the "ace" => There is no special rule for this card.
+* Playing card with rank 2 => This is a "pestkaart", which means the next player needs to take new playing cards from the playing stack. 
+                              In the case of a playing card with the rank 2, the next player needs to take 2 new playing cards from the playing stack.
+* Playing card with rank 3 => There is no special rule for this card.
+* Playing card with rank 4 => There is no special rule for this card.
+* Playing card with rank 5 => There is no special rule for this card.
+* Playing card with rank 6 => There is no special rule for this card.
+* Playing card with rank 7 => "Zeven blijft kleven": the player that throws this card on the discard stack must throw another card with the same suit or rank onto the discard stack.
+* Playing card with rank 8 => "acht wacht": the next player has to pass its turn and is not allowed to throw a card or draw a card. 
+                                            So, when playing with two players, the player who throws a playing card with rank 8 on the discard stack again gets the turn.
+* Playing card with rank 10 => There is no special rule for this card.
+* Playing card with rank 11, the "jack" => The player can throw a jack on top of any card. When a player throws the jack, the player allowed to change the suit.
+                                           The player who has the turn next, can only throw a card which either has the suit that the player choose or has the same rank.
+* Playing card with rank 12, the "queen" => There is no special rule for this card.
+* Playing card with rank 13, the "king" => There is no special rule for this card.
+
+Additional rules:
+* We make use of summing of "pestkaarten", which are the playing card with rank 2 and the joker. 
+  This means that when player 1 discards a joker, player 2 can (if he is in the possession of this card) discard a playing card with rank 2(or other "pestkaart") 
+  and does not need to take any cards from the playing stack.
+  In this case player 1, if he/she does not posess any "pestkaarten" anymore, will need to take 7 new playing cards from the playing stack.
+
+## How to play against the robot?
+
+run `python cardrobot/pesten_main.py` from the root folder.
