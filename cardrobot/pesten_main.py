@@ -1,5 +1,8 @@
 import random
+import numpy as np
 from playing_cards_classes import Pesten_GameState, suit_to_str
+
+game = Pesten_GameState() # global state of the game
 
 
 def choose_new_suit():
@@ -25,14 +28,21 @@ def choose_new_suit():
 # Used by the robot to decide which move is best
 # TODO: does not allow voluntary drawing a card
 def state_score(game, playing_card): # TODO: implement this function
-    return 0
+    return 1
 
 # returns the score of the game after choosing a specified new suit using the Jack (this is the playing card)
 def suit_score(game, playing_card, new_suit): # TODO: implement
-    return 0
+    return 1
 
+# Converts arbitrary scores to probabilities using a modified softmax function
+# If difficulty = 0, the function returns a uniform probability for all scores 
+# If 0 < difficulty < 1, the function gives a higher probability to the highest score 
+# If difficulty = 1, the function gives approximately a probability of ~1 to the highest score, and ~0 to all other scores
+def softmax_with_difficulty(scores, diff):
+    b_x = np.power(1.0 + (diff ** 3), scores - np.max(scores)) # Note to self: the power of the difficulty (>= 1) can be played with to change relative probabilities
+    return b_x / b_x.sum()
 
-def robot_turn():
+def robot_turn(difficulty):
     if (game.skip_next_turn):
         game.skip_next_turn = False
         print(f"Player {game.turn}'s turn is skipped.")
@@ -42,35 +52,29 @@ def robot_turn():
 
     turn_over = False
     while not turn_over:
+        valid_moves_lst = []
+        valid_moves_scores = []
 
-        #jack_in_robot_hand = False
-        #pestkaart_in_robot_hand = False
-        valid_moves_dict = dict()
-        #jacks_robot = []
-        #pestkaarten_robot = []
-
-        print(f"Robot's hand: {game.hands[game.turn]}") # TODO: comment this line to hide the robot's hand
+        print(f"Robot's hand: {game.hands[game.turn]}") # DEBUG
 
         if (0 < game.pestkaarten_sum): # the robot needs to play a pestkaart (or draw)
             for playing_card in game.hands[game.turn]:
                 if (playing_card.rank_id in [0,2]): # assumes the rank 2 pestkaart can always be played on top of another pestkaart
-                    valid_moves_dict[playing_card] = state_score(game, playing_card)
+                    valid_moves_lst.append(playing_card)
+                    valid_moves_scores.append(state_score(game, playing_card))
         elif (game.top_card().rank_id == 11): 
             for playing_card in game.hands[game.turn]:
                 if ((playing_card.suit_id in [0, game.active_suit]) or (playing_card.rank_id == game.top_card().rank_id)):
-                    valid_moves_dict[playing_card] = state_score(game, playing_card)
+                    valid_moves_lst.append(playing_card)
+                    valid_moves_scores.append(state_score(game, playing_card))
         else:
             for playing_card in game.hands[game.turn]:
                 if ((playing_card.suit_id in [0, game.top_card().suit_id]) or (playing_card.rank_id == game.top_card().rank_id) or (game.top_card().suit_id == 0)):
-                    valid_moves_dict[playing_card] = state_score(game, playing_card)
-                # elif playing_card.rank == "11":
-                #     jack_in_robot_hand = True
-                #     jacks_robot.append(playing_card)
-                # elif playing_card.rank == "2" or playing_card.rank == "14":
-                #     pestkaart_in_robot_hand = True
-                #     pestkaarten_robot.append(playing_card)
+                    valid_moves_lst.append(playing_card)
+                    valid_moves_scores.append(state_score(game, playing_card))
 
-        if len(valid_moves_dict) == 0:
+
+        if len(valid_moves_lst) == 0:
             if (0 < game.pestkaarten_sum):
                 print(f"Player {game.turn} draws {game.pestkaarten_sum} cards.")
                 game.draw_cards(game.turn, game.pestkaarten_sum)
@@ -82,15 +86,19 @@ def robot_turn():
                 turn_over = True
                 continue
         else: # TODO: currently only plays the best possible move, but should vary based on difficulty
-            best_move = max(valid_moves_dict, key=valid_moves_dict.get)
-            game.play_card(game.turn, game.hands[game.turn].index(best_move))
-            print(f"Player {game.turn} plays {best_move}")
+            print(f"valid_moves_lst: {valid_moves_lst}") # DEBUG
+            valid_moves_probs = softmax_with_difficulty(valid_moves_scores, difficulty)
+            print(f"valid_moves_probs: {valid_moves_probs}") # DEBUG
+            chosen_move = random.choices(valid_moves_lst, weights=valid_moves_probs)[0] # randomly chooses a move weighted on the probabilities
+
+            game.play_card(game.turn, game.hands[game.turn].index(chosen_move))
+            print(f"Player {game.turn} plays {chosen_move}")
             turn_over = True
-            if (best_move.rank_id in [0,2]):
-                game.pestkaarten_sum += (5 if best_move.rank_id == 0 else 2)
+            if (chosen_move.rank_id in [0,2]):
+                game.pestkaarten_sum += (5 if chosen_move.rank_id == 0 else 2)
                 
                 print(f"the next player needs to draw {game.pestkaarten_sum} new cards.")
-            elif (best_move.rank_id == 7):
+            elif (chosen_move.rank_id == 7):
                 if (len(game.hands[game.turn]) == 0): # We check if the hand is empty before the player takes another turn.
                     print("The robot has played all cards in their hand. It wins!")
                     # Print the playing cards the robot had left to play with.
@@ -99,16 +107,20 @@ def robot_turn():
                 print(f"Player {game.turn} takes another turn.")
                 turn_over = False
                 continue
-            elif (best_move.rank_id == 8):
+            elif (chosen_move.rank_id == 8):
                 print(f"The next player is forced to skip their turn.")
                 game.skip_next_turn = True
                 continue
-            elif (best_move.rank_id == 11):
-                suit_scores_dict = dict()
+            elif (chosen_move.rank_id == 11):
+                suit_scores = [0.0] # pre-filled with an item to make the indexing easier
                 for suit in range(1, 4+1): 
-                    suit_scores_dict[suit] = suit_score(game, best_move, suit)
-                # TODO: currently only picks the best suit, but should vary based on difficulty
-                game.active_suit = max(suit_scores_dict, key=suit_scores_dict.get)
+                    suit_scores.append(suit_score(game, chosen_move, suit))
+                
+                print(f"suit_scores: {suit_scores}") # DEBUG
+                suit_scores_probs = softmax_with_difficulty(suit_scores, difficulty)
+                print(f"suit_scores_probs: {suit_scores_probs}") # DEBUG
+
+                game.active_suit = random.choices(list(range(1, 4+1)), weights=suit_scores_probs)[0] # randomly chooses a suit weighted on the probabilities
                 print(f"Player {game.turn} has chosen the active suit to be: {suit_to_str(game.active_suit)}.")
                 continue
 
@@ -288,13 +300,17 @@ def player_turn(): # return value is True if the game is over, False otherwise
         return False
 
 
-game = Pesten_GameState() # global state of the game
+
 
 
 
 def main():
     player_total_wins = 0
     robot_total_wins = 0
+
+    # TODO: make difficulty change over time after each game or move
+    difficulty = float(input("Enter a starting difficulty level between 0 and 1 (inclusive): "))
+    
     
     done = False
     game_done = False
@@ -304,11 +320,12 @@ def main():
 
         print("starting game:")
         print(game) # TODO: comment this line before submission
+        print(f"Difficulty level: {difficulty}")
 
         while not game_done:
             print()
             if game.turn == 0:
-                game_done = robot_turn()
+                game_done = robot_turn(difficulty)
                 if game_done:
                     robot_total_wins += 1
             else:
@@ -336,4 +353,8 @@ def main():
 
 
 if __name__ == "__main__":
+    # print(softmax_with_difficulty(np.array([50,30,20]), 0))
+    # print(softmax_with_difficulty(np.array([50,30,20]), 0.5))
+    # print(softmax_with_difficulty(np.array([50,30,20]), 1.0))
+
     main()
