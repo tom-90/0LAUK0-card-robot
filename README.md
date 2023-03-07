@@ -40,8 +40,7 @@ The rules:
 * Playing card with rank 8 => "acht wacht": the next player has to pass its turn and is not allowed to throw a card or draw a card. 
                                             So, when playing with two players, the player who throws a playing card with rank 8 on the discard stack again gets the turn.
 * Playing card with rank 10 => There is no special rule for this card.
-* Playing card with rank 11, the "jack" => The player can throw a jack on top of any card. When a player throws the jack, the player allowed to change the suit.
-                                           The player who has the turn next, can only throw a card which either has the suit that the player choose or has the same rank.
+* Playing card with rank 11, the "jack" => There is no special rule for this card.
 * Playing card with rank 12, the "queen" => There is no special rule for this card.
 * Playing card with rank 13, the "king" => There is no special rule for this card.
 
@@ -50,6 +49,10 @@ Additional rules:
   This means that when player 1 discards a joker, player 2 can (if he is in the possession of this card) discard a playing card with rank 2(or other "pestkaart") 
   and does not need to take any cards from the playing stack.
   In this case player 1, if he/she does not posess any "pestkaarten" anymore, will need to take 7 new playing cards from the playing stack.
+
+TODO:
+* can immediately place card after drawing it? (currently ends the turn, unless forced to draw from 'pestkaart')
+* ace reverses order?
 
 ## How to play against the robot?
 
