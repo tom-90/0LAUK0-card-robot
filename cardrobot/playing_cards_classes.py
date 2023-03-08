@@ -146,36 +146,36 @@ class Pesten_GameState(GameState):
         # TODO: uncomment the next line to randomise the starting player
         self.turn = 0 # random.randint(0, player_count-1) # a random player starts the gamestate
 
-    # the given player plays the specified card, if card_index = -1, the player draws a card instead
-    # returns True if the turn ends, False if the player can still play
+    # The given player plays the specified card, if card_index == -1, the player draws a card instead
+    # Returns True if the turn ends, False if the player can still play
     def play_card(self, player_id, card_index, muted = False):
-        if (card_index == -1): # if the player chooses to draw a card
-            if (0 < self.pestkaarten_sum): # if the player must draw cards
-                self.draw_cards(player_id, self.pestkaarten_sum)
+        if (card_index == -1): # If the player chooses to draw a card
+            if (0 < self.pestkaarten_sum): # If the player must draw cards
+                self.draw_cards(player_id, self.pestkaarten_sum) # The player draws the mandatory number of cards 
                 if not muted:
                     print(f"Player {self.turn} draws {self.pestkaarten_sum} cards.")
                 self.pestkaarten_sum = 0
-                return False # the player can still play after drawing the forced cards
+                return False # The player must still play after drawing the forced cards
             else:
                 self.draw_cards(player_id, amount=1)
                 if not muted:
                     print(f"Player {self.turn} draws 1 card.")
-                return True # this ends the turn
+                return True # Drawing a card by choice, ends the turn
         else:
             chosen_move = self.hands[self.turn][card_index]
-            super().play_card(player_id, card_index) # moves the card to the right stack
+            super().play_card(player_id, card_index) # Moves the card from the hand to the top of the discard_stack
             if not muted:
                 print(f"Player {self.turn} plays {chosen_move}")
-            turn_over = True
-            if (chosen_move.rank_id in [0,2]):
-                self.pestkaarten_sum += (5 if chosen_move.rank_id == 0 else 2)
+            turn_over = True 
+            if (chosen_move.rank_id in [0,2]): # If chosen move is playing a "pestkaart"
+                self.pestkaarten_sum += (5 if chosen_move.rank_id == 0 else 2) # Increase pestkaarten_sum accordingly
                 if not muted:
                     print(f"the next player needs to draw {self.pestkaarten_sum} new cards.")
-            elif (chosen_move.rank_id == 7):
+            elif (chosen_move.rank_id == 7): # If chosen move is playing a card with rank 7, the turn is not over
                 if not muted:
                     print(f"Player {self.turn} takes another turn.")
                 turn_over = False
-            elif (chosen_move.rank_id == 8):
+            elif (chosen_move.rank_id == 8): # If chosen move is playing a card with rank 8, the turn of the next player is skipped
                 if not muted:
                     print(f"The next player is forced to skip their turn.")
                 self.skip_next_turn = True
@@ -187,11 +187,11 @@ class Pesten_GameState(GameState):
         assert amount > 0, "Amount must be positive"
 
         if (len(self.draw_stack) < amount):
-            print("adding all but top card of discard stack to draw stack")
+            print("Adding all but the top card of the discard stack to the draw stack")
             self.draw_stack += self.discard_stack[1:]
             self.discard_stack = [self.discard_stack[0]]
 
-        return super().draw_cards(player_id, amount)
+        return super().draw_cards(player_id, amount) # Draw a card from the updated draw_stack
     
     def has_won(self, player_id):
         return len(self.hands[player_id]) == 0
@@ -212,7 +212,7 @@ class Pesten_GameState(GameState):
         return valid_moves
     
     # Gives a score to the resulting state after the current player plays the given card
-    # Used by the robot to decide which move is best
+    # Used by the robot to decide which move is a suiting move to make 
     def move_score(self, player_id, card_index):
         copy_state = copy.deepcopy(self)
         old_hand_size = len(copy_state.hands[player_id])
@@ -230,6 +230,7 @@ def main():
     gamestate.setup(2)
     print(gamestate)
 
+    # Print function to test move_score function
     for move in gamestate.valid_moves(0):
         print(move, gamestate.move_score(0, move))
 
