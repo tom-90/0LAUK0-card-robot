@@ -211,6 +211,18 @@ class Pesten_GameState(GameState):
         valid_moves.append(-1) # -1 stands for voluntarily drawing a card
         return valid_moves
     
+    # Gives the probability that the opponent will be able to place a card on the discard stack with the knowledge about the discard_stack and your own hand
+    # This function will be used by the robot to decide which move is a suiting move to make
+    def chance_valid_card(self):
+        num_valid_cards_opponent = self.valid_moves(1)
+        total_nr_cards = len(standard_deck) + 2 # 2 jokers
+
+        num_cards_discard_stack = len(self.discard_stack)
+        num_cards_robot_hand = len(self.hands[0])
+        num_cards_opponent_has_not = num_cards_discard_stack + num_cards_robot_hand
+
+        return pow(((num_valid_cards_opponent - num_cards_opponent_has_not) / (total_nr_cards - num_cards_opponent_has_not)), len(self.hands[1]))
+    
     # Gives a score to the resulting state after the current player plays the given card
     # Used by the robot to decide which move is a suiting move to make 
     def move_score(self, player_id, card_index):
@@ -220,7 +232,7 @@ class Pesten_GameState(GameState):
             copy_state.advance_turn()
             
         # TODO: experiment with this formula and weights
-        return -20 * len(copy_state.hands[player_id]) + (old_hand_size - len(copy_state.hands[player_id])) - (0 if len(copy_state.valid_moves(player_id)) > 1 else 10) + (10 if copy_state.turn == player_id else 0) + copy_state.pestkaarten_sum * (10 if copy_state.turn != player_id else -10)
+        return -20 * len(copy_state.hands[player_id]) + (- 5 * copy_state.chance_valid_card()) + (old_hand_size - len(copy_state.hands[player_id])) - (0 if len(copy_state.valid_moves(player_id)) > 1 else 10) + (10 if copy_state.turn == player_id else 0) + copy_state.pestkaarten_sum * (10 if copy_state.turn != player_id else -10)
 
     def __str__(self):
         return super().__str__() + ", pestkaarten_sum: " + str(self.pestkaarten_sum) + ", skip_next_turn: " + str(self.skip_next_turn)
