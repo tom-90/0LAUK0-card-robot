@@ -22,7 +22,7 @@ def suit_to_str(suit_id):
     if suit_id == 0:
         return "*Joker"
     elif suit_id == 1:
-        return "Diamonds" # ""Ruiten"
+        return "Diamonds" # "Ruiten"
     elif suit_id == 2:
         return "Hearts" # "harten"
     elif suit_id == 3: 
@@ -55,7 +55,7 @@ class PlayingCard():
     def __repr__(self):
         return self.short_name()
 
-# returns a multiset containing 52 cards (4 suits * 13 ranks) and the specified number of jokers
+# Returns a multiset containing 52 cards (4 suits * 13 ranks) and the specified number of jokers
 def standard_deck(jokers):
     deck = []
     # We add each card to the playing stack once 4 * 13 = 52 cards
@@ -63,7 +63,7 @@ def standard_deck(jokers):
         for rank_id in range(1, 13+1):
             deck.append(PlayingCard(rank_id, suit_id))
 
-    # add two jokers to the deck
+    # Add jokers to the deck
     for i in range (0, jokers):
         deck.append(PlayingCard(0, 0)) 
     
@@ -72,11 +72,11 @@ def standard_deck(jokers):
 
 class GameState():
     def __init__(self, turn = 0, hands = [[]], draw_stack = [], discard_stack = []):
-        self.hands = hands # assumes the robots hand is 0 and always exists, the player hand(s) are >= 1
-        self.draw_stack = draw_stack # unordered list of cards (a card can appear multiple times, like the 2 jokers)
-        self.discard_stack = discard_stack # first element is the top card (visible to all players)
+        self.hands = hands # Assumes the robots hand is the list at index 0 and assumes this list always exists, the player hand(s) are lists with index >= 1
+        self.draw_stack = draw_stack # Unordered list of cards (a card can appear multiple times, like the 2 jokers)
+        self.discard_stack = discard_stack # First element is the top card (visible to all players at current time instance)
         assert turn < len(self.hands), "Turn must be a valid player id"
-        self.turn = turn # stores the current player's turn
+        self.turn = turn # Stores the current player's turn
 
     def __str__(self):
         return "turn: " + str(self.turn) + ", hands: " + str(self.hands) + ", discard_stack: " + str(self.discard_stack) + ", draw_stack: " + str(self.draw_stack)
@@ -87,6 +87,7 @@ class GameState():
     def top_card(self):
         assert 1 <= len(self.discard_stack), "Discard stack is empty"
 
+        # The first element of the discard_stack list is the top card
         return self.discard_stack[0]
 
     def draw_cards(self, player_id, amount = 1):
@@ -96,6 +97,7 @@ class GameState():
 
         for i in range(0, amount):
             self.hands[player_id].append(self.draw_stack.pop(random.randrange(len(self.draw_stack))))
+        # Return the cards that have been drawn
         return self.hands[player_id][-amount:]
 
     def play_card(self, player_id, card_index):
@@ -119,23 +121,25 @@ class Pesten_GameState(GameState):
         assert 1 <= len(discard_stack), "discard_stack must have at least one card"
         assert not (0 < pestkaarten_sum) or (discard_stack[0].rank_id in [0,2]), "pestkaarten_sum above 0 must imply that the top card is a pestkaart"
         
-        self.pestkaarten_sum = pestkaarten_sum # sum of the total cards the next player must draw (if they can't play a pestkaart themselves)
-        self.skip_next_turn = skip_next_turn # stores if the next player must skip their turn
-
+        self.pestkaarten_sum = pestkaarten_sum # Stores the sum of the total cards the next player must draw (if they can't play a pestkaart themselves)
+        self.skip_next_turn = skip_next_turn # Stores whether the next player must skip their turn or not
         
-    def setup(self, player_count): # sets up the gamestate if it isn't already (resets the gamestate ready to play)
-        assert player_count > 1, "Player count must be at least 2"
+    # Sets up the gamestate if it isn't set up already (resets the gamestate ready to play)
+    def setup(self, player_count): 
+        assert player_count > 1, "Player count must be at least 2" # You cannot play a game of "Pesten" with less than two players
 
         self.draw_stack = standard_deck(jokers=2)
         self.discard_stack = []
 
+        # Create empty list for each player, representing an empty hand for each player
         self.hands = [[] for i in range(player_count)]
-        for i in range(player_count): # all players draw 7 cards
+        # All players draw 7 cards / are given 7 cards
+        for i in range(player_count): 
             self.draw_cards(i, 7)
 
-        self.discard_stack.insert(0, self.draw_stack.pop(random.randrange(len(self.draw_stack)))) # draw a random card and put it on the discard stack
-        while (self.top_card().rank_id in [0, 2]): # if the top card is a 'pestkaart' (joker or rank 2 card)
-            self.discard_stack.insert(0, self.draw_stack.pop(random.randrange(len(self.draw_stack)))) # draw a random card and put it on the discard stack
+        self.discard_stack.insert(0, self.draw_stack.pop(random.randrange(len(self.draw_stack)))) # Draw a random card and put it on the discard stack
+        while (self.top_card().rank_id in [0, 2]): # If the top card is a 'pestkaart' (joker or rank 2 card)
+            self.discard_stack.insert(0, self.draw_stack.pop(random.randrange(len(self.draw_stack)))) # Draw a random card and put it on the discard stack
 
         self.pestkaarten_sum = 0
         self.skip_next_turn = False
