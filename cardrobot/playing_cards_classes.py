@@ -215,7 +215,7 @@ class Pesten_GameState(GameState):
     # This function will be used by the robot to decide which move is a suiting move to make
     def chance_valid_card(self):
         num_valid_cards_opponent = self.valid_moves(1)
-        total_nr_cards = len(standard_deck) + 2 # 2 jokers
+        total_nr_cards = len(standard_deck(2)) # 2 jokers
 
         num_cards_discard_stack = len(self.discard_stack)
         num_cards_robot_hand = len(self.hands[0])
