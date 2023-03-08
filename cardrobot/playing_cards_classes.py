@@ -214,14 +214,17 @@ class Pesten_GameState(GameState):
     # Gives the probability that the opponent will be able to place a card on the discard stack with the knowledge about the discard_stack and your own hand
     # This function will be used by the robot to decide which move is a suiting move to make
     def chance_valid_card(self):
-        num_valid_cards_opponent = self.valid_moves(1)
+        num_valid_cards_opponent = len(self.valid_moves(1))
         total_nr_cards = len(standard_deck(2)) # 2 jokers
 
         num_cards_discard_stack = len(self.discard_stack)
         num_cards_robot_hand = len(self.hands[0])
         num_cards_opponent_has_not = num_cards_discard_stack + num_cards_robot_hand
 
-        return pow(((num_valid_cards_opponent - num_cards_opponent_has_not) / (total_nr_cards - num_cards_opponent_has_not)), len(self.hands[1]))
+        chance = (num_valid_cards_opponent - num_cards_opponent_has_not) / (total_nr_cards - num_cards_opponent_has_not)
+        num_cards_in_hand_opponent = len(self.hands[1])
+
+        return pow(chance, num_cards_in_hand_opponent)
     
     # Gives a score to the resulting state after the current player plays the given card
     # Used by the robot to decide which move is a suiting move to make 
