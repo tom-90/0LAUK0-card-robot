@@ -142,12 +142,14 @@ def playsession():
         game_done = False
         while not game_done:
             print()
+            print(f"The top card on the discard stack is {gamestate.discard_stack[0]}.")
             if gamestate.turn == 0:
-                if robot_turn(difficulty):
+                # If it is the robot's turn, the robot takes its turn
+                if robot_turn(difficulty): # If the function robot_turn returns true, the robot has won the game
                     robot_total_wins += 1
-            else:
+            else: # Else, it is the turn of a player
                 if player_turn():
-                    player_total_wins += 1
+                    player_total_wins += 1 # If the function player_turn() returns true, the player has won the game
 
             gamestate.advance_turn()
 
