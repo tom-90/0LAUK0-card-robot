@@ -100,7 +100,8 @@ def player_turn():
                 print("You don't have that card. Try again.")
                 continue # Again, give the player the option to choose between playing a card or drawing a card
             else:
-                if selected_card in valid_moves_lst:
+                if (selected_card.suit_id == gamestate.discard_stack[0].suit_id or selected_card.rank_id == gamestate.discard_stack[0].rank_id 
+                    or selected_card.rank_id == 0 or selected_card.rank_id == 0):
                     turn_over = gamestate.play_card(gamestate.turn, gamestate.hands[gamestate.turn].index(selected_card))
                     # Checks whether player has won the game
                     if (gamestate.has_won(gamestate.turn)):
