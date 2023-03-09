@@ -235,9 +235,21 @@ class Pesten_GameState(GameState):
             copy_state.advance_turn()
             
         # TODO: experiment with this formula and weights
-        score = -20 * len(copy_state.hands[player_id]) + (- 5 * copy_state.chance_valid_card(player_id)) + (old_hand_size - len(copy_state.hands[player_id])) \
-                - (0 if len(copy_state.valid_moves(player_id)) > 1 else 10) + (10 if copy_state.turn == player_id else 0) \
-                + copy_state.pestkaarten_sum * (10 if copy_state.turn != player_id else -10)
+
+                # The number of cards in the hand of the player in the resulting gamestate
+        score = (-20 * len(copy_state.hands[player_id]) \
+                # The chance that the other player will be able to play a card in the resulting gamestate
+                + (- 10 * copy_state.chance_valid_card(player_id)) \
+                # The difference between the number of cards in hand after making the move
+                + (old_hand_size - len(copy_state.hands[player_id])) \
+                # Penalize for having no valid moves in the resulting gamestate
+                - (0 if len(copy_state.valid_moves(player_id)) > 1 else 10) \
+                # Reward for again getting the next turn  in the resulting gamestate
+                + (10 if copy_state.turn == player_id else 0) \
+                # Reward if pestkaarten_sum is greater than zero and it is not the turn of the player in the resulting gamestate
+                # Penalize if pestkaarten_sum is greater than zero and it is your turn in the resulting gamestate
+                # Else, no reward/penalty
+                + copy_state.pestkaarten_sum * (10 if copy_state.turn != player_id else -10))
         return score
 
     def __str__(self):
