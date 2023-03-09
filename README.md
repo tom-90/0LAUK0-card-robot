@@ -29,7 +29,7 @@ Hence, we will explicitly state which rules are used for this program.
 The rules:
 * Playing card with rank 0, the "joker" => This is a "pestkaart", which means the next player needs to take new playing cards from the playing stack. 
                                             In the case of a Joker, the next player needs to take 5 new playing cards from the playing stack.
-* Playing card with rank 1, the "ace" => There is no special rule for this card.
+* Playing card with rank 1, the "ace" => When this card is played, the direction of play reverses.
 * Playing card with rank 2 => This is a "pestkaart", which means the next player needs to take new playing cards from the playing stack. 
                               In the case of a playing card with the rank 2, the next player needs to take 2 new playing cards from the playing stack.
 * Playing card with rank 3 => There is no special rule for this card.
@@ -52,7 +52,6 @@ Additional rules:
 
 TODO:
 * can immediately place card after drawing it? (currently ends the turn, unless forced to draw from 'pestkaart')
-* ace reverses order?
 
 ## How to play against the robot?
 
