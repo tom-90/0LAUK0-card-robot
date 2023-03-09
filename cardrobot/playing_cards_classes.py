@@ -235,8 +235,8 @@ class Pesten_GameState(GameState):
             copy_state.advance_turn()
             
         # TODO: experiment with this formula and weights
-        score = -20 * len(copy_state.hands[player_id]) + (- 5 * copy_state.chance_valid_card(player_id)) + (old_hand_size - len(copy_state.hands[player_id])) 
-                - (0 if len(copy_state.valid_moves(player_id)) > 1 else 10) + (10 if copy_state.turn == player_id else 0) 
+        score = -20 * len(copy_state.hands[player_id]) + (- 5 * copy_state.chance_valid_card(player_id)) + (old_hand_size - len(copy_state.hands[player_id])) \
+                - (0 if len(copy_state.valid_moves(player_id)) > 1 else 10) + (10 if copy_state.turn == player_id else 0) \
                 + copy_state.pestkaarten_sum * (10 if copy_state.turn != player_id else -10)
         return score
 
