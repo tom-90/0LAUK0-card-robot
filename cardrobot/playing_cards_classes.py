@@ -246,6 +246,7 @@ class Pesten_GameState(GameState):
     def move_score(self, player_id, card_index):
         copy_state = copy.deepcopy(self)
         old_hand_size = len(copy_state.hands[player_id])
+        old_pestkaarten_sum = copy_state.pestkaarten_sum # The pestkaarten_sum value before the move is made
         if (copy_state.play_card(copy_state.turn, card_index, muted=True)):
             copy_state.advance_turn()
             
@@ -260,11 +261,13 @@ class Pesten_GameState(GameState):
                 # Penalize for having no valid moves in the resulting gamestate
                 - 10 * (0 if len(copy_state.valid_moves(player_id)) > 1 else 1) \
                 # Reward for again getting the next turn  in the resulting gamestate
-                + 10 * (1 if copy_state.turn == player_id else 0) \
-                # Reward if pestkaarten_sum is greater than zero and it is not the turn of the player in the resulting gamestate
-                # Penalize if pestkaarten_sum is greater than zero and it is your turn in the resulting gamestate
-                # Else, no reward/penalty
-                + 10 * copy_state.pestkaarten_sum * (1 if copy_state.turn != player_id else -1))
+                + 50 * (1 if copy_state.turn == player_id else 0) \
+                # If pestkaarten_sum is greater than zero before player has made its move, reward for playing a pestkaart.
+                + 10 * (1 if old_pestkaarten_sum > 0 and copy_state.pestkaarten_sum > old_pestkaarten_sum else 0) \
+                # Penalize for playing a pestkaart when pestkaarten_sum is not greater than zero before player has made its move 
+                # and when next_player has relatively many cards left.
+                - 10 * (1 if old_pestkaarten_sum <= 0 and copy_state.next_player() > 4 else 0) \
+                )
         return score
 
     def __str__(self):
