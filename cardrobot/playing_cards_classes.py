@@ -266,7 +266,7 @@ class Pesten_GameState(GameState):
                 + 10 * (1 if old_pestkaarten_sum > 0 and copy_state.pestkaarten_sum > old_pestkaarten_sum else 0) \
                 # Penalize for playing a pestkaart when pestkaarten_sum is not greater than zero before player has made its move 
                 # and when next_player has relatively many cards left.
-                - 10 * (1 if old_pestkaarten_sum <= 0 and copy_state.next_player() > 4 else 0) \
+                - 10 * (1 if old_pestkaarten_sum <= 0 and len(copy_state.hands[copy_state.next_player()]) > 4 else 0) \
                 )
         return score
 
