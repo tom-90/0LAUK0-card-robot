@@ -73,9 +73,6 @@ def player_turn():
         print(f"Player {gamestate.turn}'s hand: {gamestate.hands[gamestate.turn]}")
         print(f"The top card on the discard stack is {gamestate.top_card()}.")
 
-        # Obtain the list of valid moves
-        valid_moves_lst = gamestate.valid_moves(gamestate.turn)
-
         if (0 < gamestate.pestkaarten_sum):
             print(f"You need to throw a 'pestkaart' or you will be forced to draw {gamestate.pestkaarten_sum} new cards.")
 
@@ -85,27 +82,24 @@ def player_turn():
         if ((0 < len(response)) and (response.lower()[0] == 'd')): # Player chooses to draw a card
             turn_over = gamestate.play_card(gamestate.turn, -1)
             continue
-        else: # Player chooses to play a card
+        else: # Player chose to play a card
 
             try:
                 selected_move = [x.short_name() for x in gamestate.hands[gamestate.turn]].index(response.upper())
             except ValueError:
-                selected_move = -1
-
-            if (selected_move == -1): # the selected card is not in the players hand
                 print("You don't have that card. Try again.")
                 continue # Again, give the player the option to choose between playing a card or drawing a card
-            else: # the selected card is in the players hand
-                if (gamestate.is_valid_card(gamestate.hands[gamestate.turn][selected_move])): 
-                    turn_over = gamestate.play_card(gamestate.turn, selected_move)
-                    # Checks whether player has won the game
-                    if (gamestate.has_won(gamestate.turn)):
-                        print(f"Player {gamestate.turn} has won the game!")
-                        print("hands = " + str(gamestate.hands)) # DEBUG
-                        return True     
-                else: 
-                    print("This card is not a valid move. Try again.")
-                    continue # Again, give the player the option to choose between playing a card or drawing a card
+
+            if (gamestate.is_valid_card(gamestate.hands[gamestate.turn][selected_move])): 
+                turn_over = gamestate.play_card(gamestate.turn, selected_move)
+                # Checks whether player has won the game
+                if (gamestate.has_won(gamestate.turn)):
+                    print(f"Player {gamestate.turn} has won the game!")
+                    print("hands = " + str(gamestate.hands)) # DEBUG
+                    return True     
+            else: 
+                print("This card is not a valid move. Try again.")
+                continue # Again, give the player the option to choose between playing a card or drawing a card
                       
                 
     # Checks whether player has won the game after the turn is over
@@ -123,6 +117,7 @@ def playsession():
 
     # TODO: make difficulty change over time after each game or move
     difficulty = float(input("Enter a starting difficulty level between 0 and 1 (inclusive): "))
+    assert 0.0 <= difficulty <= 1.0, "difficulty level must be between 0 and 1 (inclusive)"
 
     number_of_players = int(input("Enter the number of players (including robot >= 2): "))
     assert number_of_players >= 2, "not enough players"

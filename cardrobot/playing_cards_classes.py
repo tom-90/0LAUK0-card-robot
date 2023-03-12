@@ -79,7 +79,7 @@ class GameState():
         self.turn = turn # Stores the current player's turn
 
     def __str__(self):
-        return "turn: " + str(self.turn) + ", hands: " + str(self.hands) + ", discard_stack: " + str(self.discard_stack) + ", draw_stack: " + str(self.draw_stack)
+        return f"turn: {self.turn}, hands: {self.hands}, discard_stack: {self.discard_stack}, draw_stack: {self.draw_stack}"
     
     def num_players(self):
         return len(self.hands)
@@ -151,8 +151,12 @@ class Pesten_GameState(GameState):
         self.play_direction = 1
         # TODO: uncomment the next line to randomise the starting player
         self.turn = 0 # random.randint(0, player_count-1) # a random player starts the gamestate
+    
+    def __str__(self):
+        return f"{super().__str__()}, pestkaarten_sum: {self.pestkaarten_sum}, skip_next_turn: {self.skip_next_turn}, play_direction: {self.play_direction}"
 
-     # overrides the next_player function in the superclass (allows for the play direction to be changed)
+
+    # overrides the next_player function in the superclass (allows for the play direction to be changed)
     def next_player(self):
         return (self.turn + self.play_direction) % self.num_players()
 
@@ -215,38 +219,42 @@ class Pesten_GameState(GameState):
         if (0 < self.pestkaarten_sum):
             return playingcard.rank_id in [0,2]
         else:
-            return (playingcard.suit_id == self.top_card().suit_id or playingcard.rank_id == self.top_card().rank_id or playingcard.rank_id == 0 or self.top_card().rank_id == 0)
+            return ((playingcard.suit_id in [0, self.top_card().suit_id]) or (self.top_card().rank_id in [0, playingcard.rank_id]))
 
     # Gives a list of valid moves for the given player, this always includes the option to draw a card (-1)
     def valid_moves(self, player_id):
-        valid_moves = []
-        for i in range(len(self.hands[player_id])):
-            if (self.is_valid_card(self.hands[player_id][i])):
-                valid_moves.append(i)
+        valid_moves = [index for index, card in enumerate(self.hands[player_id]) if self.is_valid_card(card)]
         valid_moves.append(-1) # -1 stands for voluntarily drawing a card
         return valid_moves
     
-    # Gives the probability that the opponent will be able to place a card on the discard stack with the knowledge about the discard_stack and your own hand
+    # Gives the probability that the specified player will be able to place a card on the discard stack with the knowledge about the discard_stack and the robots hand
     # This function will be used by the robot in move_score() to decide which move is a suitable move to make
-    def chance_next_player_has_valid_card(self):
-        num_cards_next_player = len(self.hands[self.next_player()])
+    def chance_player_has_valid_card(self, robot_players, player_id):
+        if (player_id not in robot_players):
+            known_cards = self.discard_stack
+            for robot_id in robot_players:
+                known_cards += self.hands[robot_id]
+            unknown_cards = list(Counter(standard_deck(2)) - Counter(known_cards)) # preserves potential duplicate jokers in the deck
+            valid_unknown_cards = [x for x in unknown_cards if self.is_valid_card(x)]
+            
+            chance_1_valid = float(len(valid_unknown_cards)) / len(unknown_cards) # chance 1 unknown card is valid
+            chance_1_invalid = 1.0 - chance_1_valid # chance 1 unknown card is invalid
+            chance_all_cards_invalid = chance_1_invalid ** len(self.hands[player_id]) # chance that all cards in the players hand are invalid
         
-        known_cards = self.discard_stack + self.hands[self.turn]
-        unknown_cards = list(Counter(standard_deck(2)) - Counter(known_cards)) # preserves potential duplicate jokers in the deck
-        valid_unknown_cards = [x for x in unknown_cards if self.is_valid_card(x)]
-        
-        chance_1_valid = float(len(valid_unknown_cards)) / len(unknown_cards) # chance 1 unknown card is valid
-        chance_1_invalid = 1.0 - chance_1_valid # chance 1 unknown card is invalid
-        chance_all_cards_invalid = chance_1_invalid ** num_cards_next_player # chance that all cards in the next players hand are invalid
-        
-        return 1.0 - chance_all_cards_invalid # chance that at least 1 valid card is in the next players hand
+            return 1.0 - chance_all_cards_invalid # chance that at least 1 valid card is in the players hand
+        else:
+            return 1.0 if len(self.valid_moves(player_id)) > 1 else 0.0
+    
 
-    # Gives a score to the resulting state after the current player_id (only used by the robot) plays the given card
+    # Gives a score to the resulting state after the current player_id (only used by the robot) makes the move
     # Used by the robot to decide which move is a suiting move to make 
     def move_score(self, player_id, card_index):
         copy_state = copy.deepcopy(self)
         old_hand_size = len(copy_state.hands[player_id])
         old_pestkaarten_sum = copy_state.pestkaarten_sum # The pestkaarten_sum value before the move is made
+        old_top_card = copy_state.top_card() # The top card of the discard stack before the move is made
+
+        # the 2 lines below make the move and if applicable advances the turn (so the score is calculated 1 turn in the future)
         if (copy_state.play_card(copy_state.turn, card_index, muted=True)):
             copy_state.advance_turn()
             
@@ -255,7 +263,7 @@ class Pesten_GameState(GameState):
                 # The number of cards in the hand of the player in the resulting gamestate
         score = (200 - 20 * len(copy_state.hands[player_id]) \
                 # The chance that the other player will be able to play a card in the resulting gamestate
-                - 10 * copy_state.chance_next_player_has_valid_card() \
+                - 20 * copy_state.chance_player_has_valid_card([0], copy_state.turn) \
                 # The difference between the number of cards in hand after making the move
                 + (old_hand_size - len(copy_state.hands[player_id])) \
                 # Penalize for having no valid moves in the resulting gamestate
@@ -266,12 +274,12 @@ class Pesten_GameState(GameState):
                 + 10 * (1 if old_pestkaarten_sum > 0 and copy_state.pestkaarten_sum > old_pestkaarten_sum else 0) \
                 # Penalize for playing a pestkaart when pestkaarten_sum is not greater than zero before player has made its move 
                 # and when next_player has relatively many cards left.
-                - 10 * (1 if old_pestkaarten_sum <= 0 and len(copy_state.hands[copy_state.next_player()]) > 4 else 0) \
+                - 10 * (1 if old_pestkaarten_sum <= 0 and len(copy_state.hands[copy_state.turn]) > 4 else 0) \
+                # small reward for playing a non-standard card
+                + 5 * (1 if old_top_card != copy_state.top_card() and copy_state.top_card().rank_id in [0,1,2,7,8] else 0) \
                 )
         return score
 
-    def __str__(self):
-        return super().__str__() + ", pestkaarten_sum: " + str(self.pestkaarten_sum) + ", skip_next_turn: " + str(self.skip_next_turn) + ", play_direction: " + str(self.play_direction)
 
 def main():
     gamestate = Pesten_GameState()
@@ -282,8 +290,8 @@ def main():
     for move in gamestate.valid_moves(0):
         print(move, gamestate.move_score(0, move))
 
-    gamestate.play_card(0, -1)
-    print(gamestate)
+    # gamestate.play_card(0, -1)
+    # print(gamestate)
 
 if __name__ == "__main__":
     main()
