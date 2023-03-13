@@ -54,6 +54,12 @@ class PlayingCard():
     
     def __repr__(self):
         return self.short_name()
+    
+    def __eq__(self, other):
+        return self.rank_id == other.rank_id and self.suit_id == other.suit_id
+    
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
 # Returns a multiset containing 52 cards (4 suits * 13 ranks) and the specified number of jokers
 def standard_deck(jokers):
