@@ -6,12 +6,12 @@ import numpy as np
 
 
 
-# TODO: returns the top card of the discard stack as seen by the camera
+# TODO: returns the top card of the discard stack as currently seen by the camera
 def camera_top_card():
     return PlayingCard(3,1)
 
-# TODO: returns the card that is temporarily visible to the robot (to be placed in their hand)
-def camera_robot_card():
+# TODO: returns the card that is temporarily visible to the camera (to be placed in their hand)
+def camera_robot_hand_card():
     return PlayingCard(4,1)
 
 # TODO: the program waits until the specified card is seen on the discard stack (the robot plays this card)
@@ -28,9 +28,9 @@ def camera_wait_until_shuffle():
     return
 
 
-# TODO: returns the new card the human player plays on the discard stack 
-# or an integer equal to the number of drawn cards
-# note that it is possible that a joker is played on top of a joker (the top card remains the same)
+# TODO: waits for the player to play a card on the discard stack and returns this new card 
+# if the player instead chooses to draw any number of cards (any number >= 1), return None
+# note that it is possible that a joker is played on top of a joker (the top card does not necessarily change)
 def camera_detect_played_card():
     return PlayingCard(5,1)
 
@@ -109,7 +109,7 @@ class Pesten_Unknown_GameState():
 
         if self.is_robot(player_index):
             for i in range(amount):
-                self.hands[player_index].append(camera_robot_card()) # wait until the robot has seen all drawn cards
+                self.hands[player_index].append(camera_robot_hand_card()) # wait until the robot has seen all drawn cards
         else:
             self.hands[player_index] += amount
 
@@ -324,7 +324,7 @@ class Pesten_Unknown_GameState():
 
             card = camera_detect_played_card()
 
-            if isinstance(card, PlayingCard):
+            if (card is not None):
                 if (not self.is_valid_card(card)):
                     print(f"Player {self.turn} played an invalid card: {card}. lmao")
                 
@@ -338,15 +338,14 @@ class Pesten_Unknown_GameState():
                     return True     
                 continue
             else:
-                print(f"Player {self.turn} draws {card} cards.")
-                self.draw_cards(self.turn, card)
-                
                 if (0 < self.pestkaarten_sum): # If the player must draw cards
-                    if (card != self.pestkaarten_sum):
-                        print(f"Player {self.turn} should have drawn {self.pestkaarten_sum} cards, but actually drew {card} cards. lmao")
+                    print(f"Player {self.turn} draws {self.pestkaarten_sum} cards.")
+                    self.draw_cards(self.turn, self.pestkaarten_sum)
                     self.pestkaarten_sum = 0
                     continue # The player must still play after drawing the forced cards
                 else:
+                    print(f"Player {self.turn} draws {1} card.")
+                    self.draw_cards(self.turn, 1)
                     turn_over = True
                     continue # Drawing a card by choice, ends the turn
 
