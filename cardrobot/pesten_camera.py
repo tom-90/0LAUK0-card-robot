@@ -22,6 +22,11 @@ def camera_wait_until_top_card(card):
     # while (camera_top_card() != card):
     #     pass
 
+# TODO: wait until all cards from the discard stack except the top card are shuffled and added to the draw stack
+def camera_wait_until_shuffle():
+    print("Shuffling...")
+    return
+
 
 # TODO: returns the new card the human player plays on the discard stack 
 # or an integer equal to the number of drawn cards
@@ -85,10 +90,10 @@ class Pesten_Unknown_GameState():
 
         self.discard_stack = []
 
-        self.discard_stack.insert(0, camera_top_card()) # TODO: draw one card and add it to the discard stack
+        self.discard_stack.insert(0, camera_top_card()) # draw one card and add it to the discard stack
         self.draw_stack_count -= 1
         while (self.top_card().rank_id in [0, 2]):
-            # TODO: wait until the top card is not a pestkaart (joker or rank 2 card)
+            # wait until the top card is not a pestkaart (joker or rank 2 card)
             self.discard_stack.insert(0, camera_top_card())
             self.draw_stack_count -= 1
 
@@ -97,7 +102,8 @@ class Pesten_Unknown_GameState():
         assert 1 <= amount, "amount must be at least 1"
 
         if self.draw_stack_count < amount:
-            # TODO: wait until all cards from the discard stack except the top card are shuffled and added to the draw stack
+            # wait until all cards from the discard stack except the top card are shuffled and added to the draw stack
+            camera_wait_until_shuffle()
             self.draw_stack_count += len(self.discard_stack) - 1
             self.discard_stack = [self.discard_stack[0]]
 
@@ -111,13 +117,7 @@ class Pesten_Unknown_GameState():
 
     def is_robot(self, player_id):
         return isinstance(self.hands[player_id], list)
-    
-    def has_won(self, player_id):
-        if self.is_robot(player_id):
-            return len(self.hands[player_id]) == 0
-        else:
-            return self.hands[player_id] == 0
-    
+
     def num_players(self):
         return len(self.hands)
 
@@ -130,6 +130,9 @@ class Pesten_Unknown_GameState():
             return len(self.hands[player_id])
         else:
             return self.hands[player_id]
+        
+    def has_won(self, player_id):
+        return self.number_of_cards(player_id) == 0
 
     def next_player(self):
         return (self.turn + self.play_direction) % self.num_players()
@@ -335,16 +338,15 @@ class Pesten_Unknown_GameState():
                     return True     
                 continue
             else:
+                print(f"Player {self.turn} draws {card} cards.")
+                self.draw_cards(self.turn, card)
+                
                 if (0 < self.pestkaarten_sum): # If the player must draw cards
                     if (card != self.pestkaarten_sum):
                         print(f"Player {self.turn} should have drawn {self.pestkaarten_sum} cards, but actually drew {card} cards. lmao")
-                        
-                    self.draw_cards(self.turn, card)
-                    print(f"Player {self.turn} draws {card} cards.")
                     self.pestkaarten_sum = 0
                     continue # The player must still play after drawing the forced cards
                 else:
-                    self.draw_cards(self.turn, amount=1)
                     turn_over = True
                     continue # Drawing a card by choice, ends the turn
 
@@ -370,22 +372,23 @@ class Pesten_Unknown_GameState():
         self.advance_turn()
         return -1 # If the function returns -1, the game is not yet over
 
-# completes on full game until someone wins
-def do_game(gamestate, difficulty):
-    while True:
-        print(gamestate) # DEBUG
-        turnresult = gamestate.do_turn(difficulty)
-        if (0 <= turnresult):
-            return turnresult
+    # completes one full game until someone wins
+    def do_game(self, difficulty):
+        print(f"The direction of play is {'clockwise' if self.play_direction == 1 else 'anti-clockwise'}.")
+        while True:
+            print(self) # DEBUG
+            winner = self.do_turn(difficulty)
+            if (0 <= winner):
+                return winner
 
 
 def playsession(is_robot_list, difficulty, player_total_wins = 0.0, robot_total_wins = 0.0):
     gamestate = Pesten_Unknown_GameState()
     
-    while True:
+    playsession_done = False
+    while not playsession_done:
         gamestate.setup(is_robot_list)
         print(gamestate) # DEBUG
-        print(f"Player wins: {player_total_wins}, Robot wins: {robot_total_wins}, win ratio: {player_total_wins/(player_total_wins+robot_total_wins) if (player_total_wins+robot_total_wins) > 0 else 0}")
         print(f"Current difficulty: {difficulty}")
         
         winner = gamestate.do_game(difficulty)
@@ -394,17 +397,23 @@ def playsession(is_robot_list, difficulty, player_total_wins = 0.0, robot_total_
         else:
             player_total_wins += 1
 
-        
-        
+        print(f"Player wins: {player_total_wins}, Robot wins: {robot_total_wins}, win ratio: {player_total_wins/(player_total_wins+robot_total_wins) if (player_total_wins+robot_total_wins) > 0 else 0}")
 
+        # TODO: change difficulty based on win ratio
+
+        play_again = input("Play again (Yes/No)? ")
+        if (0 < len(play_again) and play_again.lower()[0] == 'y'):
+            continue
+        else:
+            playsession_done = True
+        
 
 def main():
-    gamestate = Pesten_Unknown_GameState()
-    gamestate.setup([True, False, False])
+    # gamestate = Pesten_Unknown_GameState()
+    # gamestate.setup([True, False, False])
     # print(gamestate)
 
-    do_game(gamestate, 1.0)
-    # playsession([True, False, False], 1.0) # WARNING INFINITE LOOP
+    playsession([True, False, False], 1.0)
     
 
 if __name__ == "__main__":

@@ -18,7 +18,7 @@ After the repository has been set-up, please copy the `.env.template` file and r
 
 All source code for the program is located in the `cardrobot` folder. The `model` folder contains all data and scripts that have to do with training the model, which are not relevant for executing the program.
 
-To execute the program, run `python cardrobot/main.py` from the root folder.
+To execute the program, run `python cardrobot/camera.py` from the root folder.
 
 
 ## 'Pesten' rules
@@ -52,7 +52,3 @@ Additional rules:
 
 TODO:
 * can immediately place card after drawing it? (currently ends the turn, unless forced to draw from 'pestkaart')
-
-## How to play against the robot?
-
-run `python cardrobot/pesten_main.py` from the root folder.
