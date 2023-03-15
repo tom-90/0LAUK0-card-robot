@@ -240,7 +240,9 @@ class Pesten_GameState(GameState):
             known_cards = self.discard_stack
             for robot_id in robot_players:
                 known_cards += self.hands[robot_id]
-            unknown_cards = list(Counter(standard_deck(2)) - Counter(known_cards)) # preserves potential duplicate jokers in the deck
+            unknown_cards_counter = Counter([(x.rank_id, x.suit_id) for x in standard_deck(2)]) - Counter([(x.rank_id, x.suit_id) for x in known_cards])
+            
+            unknown_cards = [PlayingCard(rank, suit) for (rank, suit) in unknown_cards_counter.elements()] # preserves potential duplicate jokers in the deck
             valid_unknown_cards = [x for x in unknown_cards if self.is_valid_card(x)]
             
             chance_1_valid = float(len(valid_unknown_cards)) / len(unknown_cards) # chance 1 unknown card is valid

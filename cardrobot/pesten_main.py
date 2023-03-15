@@ -1,5 +1,12 @@
+import os
 import random
 import numpy as np
+import threading
+from PIL import Image, ImageTk
+from tkinter import Frame, LabelFrame
+from tkinter import Text
+from tkinter import Label
+from tkinter import Tk
 from playing_cards_classes import Pesten_GameState
 
 gamestate = Pesten_GameState() # global state of the gamestate
@@ -44,6 +51,7 @@ def robot_turn(difficulty):
 
         # The chosen move is made and turn_over is updated accordingly
         turn_over = gamestate.play_card(gamestate.turn, chosen_move)
+        update_user_interface(gamestate.discard_stack[0]) # robot made a play, update GUI
 
         # Checks whether robot has won the game
         if (gamestate.has_won(gamestate.turn)):
@@ -92,6 +100,7 @@ def player_turn():
 
             if (gamestate.is_valid_card(gamestate.hands[gamestate.turn][selected_move])): 
                 turn_over = gamestate.play_card(gamestate.turn, selected_move)
+                update_user_interface(gamestate.discard_stack[0]) # player made a play, update GUI
                 # Checks whether player has won the game
                 if (gamestate.has_won(gamestate.turn)):
                     print(f"Player {gamestate.turn} has won the game!")
@@ -110,8 +119,72 @@ def player_turn():
     else:
         return False
 
+# Function to resize the playing card images
+def resize_playing_card_images(playing_card):
+    # Open the image
+    original_playing_card_image = Image.open(playing_card)
+
+    # Resize the image
+    playing_card_image = original_playing_card_image.resize((150, 220))
+
+    # Obtain the resized image
+    global resize_playing_card_image
+    resize_playing_card_image = ImageTk.PhotoImage(playing_card_image)
+
+    # Return the resized image
+    return resize_playing_card_image
+
+# Update the draw or discard stack depending on what play was made
+def update_user_interface(top_card):
+    file_path_image_1 = os.path.abspath("cardrobot/Playing cards/back of playing card.png")
+
+    original_playing_card_1_image = Image.open(file_path_image_1).resize((150,220))
+    global resize_playing_card_1_image
+    resize_playing_card_1_image = ImageTk.PhotoImage(original_playing_card_1_image)
+    
+    draw_stack_label.config(image = resize_playing_card_1_image)
+    # TODO: add textbar which shows the current action robot is performing / instruction player
+
+    file_path_image_2 = os.path.abspath(f"cardrobot/Playing cards/{top_card}.png")
+
+    original_playing_card_2_image = Image.open(file_path_image_2).resize((150,220))
+    global resize_playing_card_2_image
+    resize_playing_card_2_image = ImageTk.PhotoImage(original_playing_card_2_image)
+
+    discard_stack_label.config(image = resize_playing_card_2_image) # The top card on the discard stack  
+
+def graphical_user_interface():
+    root = Tk()
+    root.title("A game of Pesten")
+    # Sets the icon of the window
+    #root.iconbitmap()
+    root.geometry("900x500")
+    root.configure(background="green")
+    
+    main_frame = Frame(root, background = "green")
+    main_frame.pack(pady=20)
+
+    # Create the frames for the two game stacks and the two hands
+    draw_stack_frame = LabelFrame(main_frame, text="Draw stack", border=0)
+    draw_stack_frame.grid(row=0, column=2, padx=20, pady=40, ipadx=20)
+
+    discard_stack_frame = LabelFrame(main_frame, text="Discard stack", border=0)
+    discard_stack_frame.grid(row=0, column=3, padx=20, pady=40, ipadx=20)
+
+    # Put cards in the frames, this is done by putting images into labels
+    global draw_stack_label 
+    draw_stack_label = Label(draw_stack_frame, text="")
+    draw_stack_label.pack(pady=20)
+
+    global discard_stack_label 
+    discard_stack_label = Label(discard_stack_frame, text="")
+    discard_stack_label.pack(pady=20)
+
+    # Call event loop which makes the window appear
+    root.mainloop()
 
 def playsession():
+
     player_total_wins = 0
     robot_total_wins = 0
 
@@ -125,6 +198,9 @@ def playsession():
     playsession_done = False
     while not playsession_done:
         gamestate.setup(player_count=number_of_players) # Resets the gamestate: creates a new deck and deals 7 cards to each player, a random player gets the turn
+
+        # Game is started, so GUI is updated 
+        update_user_interface(gamestate.discard_stack[0])
 
         print("starting gamestate:")
         print(gamestate) # DEBUG
@@ -156,11 +232,14 @@ def playsession():
 
     print("\nFinal score:")
     print(f"Number of games won by you: {player_total_wins}   Number of games won by the robot: {robot_total_wins}")
-    print(f" win/loss ratio is {player_total_wins / (player_total_wins + robot_total_wins) if (player_total_wins + robot_total_wins) > 0 else 0}")
-
+    print(f" win/loss ratio is {player_total_wins / (player_total_wins + robot_total_wins) if (player_total_wins + robot_total_wins) > 0 else 0}")    
 
 if __name__ == "__main__":
     # print(softmax_with_difficulty(np.array([50,30,20]), 0))
     # print(softmax_with_difficulty(np.array([50,30,20]), 0.5))
     # print(softmax_with_difficulty(np.array([50,30,20]), 1.0))
+
+    GUI_thread = threading.Thread(target=graphical_user_interface)
+    GUI_thread.start()
     playsession()
+    GUI_thread.join()
