@@ -24,9 +24,11 @@ def softmax_with_difficulty(scores, diff):
 def robot_turn(difficulty):
     if (gamestate.skip_next_turn):
         gamestate.skip_next_turn = False
+        update_gamestate_status_user_interface(f"Player {gamestate.turn}'s turn is skipped.")
         print(f"Player {gamestate.turn}'s turn is skipped.")
         return False
-
+    
+    update_gamestate_status_user_interface(f"It is player {gamestate.turn}'s turn.")
     print(f"It is player {gamestate.turn}'s turn.")
 
     turn_over = False
@@ -55,12 +57,14 @@ def robot_turn(difficulty):
 
         # Checks whether robot has won the game
         if (gamestate.has_won(gamestate.turn)):
+            update_gamestate_status_user_interface(f"Player {gamestate.turn} has won the game!")
             print(f"Player {gamestate.turn} has won the game!")
             print("hands = " + str(gamestate.hands)) # DEBUG
             return True
 
     # Checks whether robot has won the game
     if (gamestate.has_won(gamestate.turn)):
+        update_gamestate_status_user_interface(f"Player {gamestate.turn} has won the game!")
         print(f"Player {gamestate.turn} has won the game!")
         print("hands = " + str(gamestate.hands)) # DEBUG
         return True
@@ -71,9 +75,11 @@ def robot_turn(difficulty):
 def player_turn(): 
     if (gamestate.skip_next_turn):
         gamestate.skip_next_turn = False
+        update_gamestate_status_user_interface(f"Player {gamestate.turn}'s turn is skipped.")
         print(f"Player {gamestate.turn}'s turn is skipped.")
         return False
 
+    update_gamestate_status_user_interface(f"It is player {gamestate.turn}'s turn.")
     print(f"It is player {gamestate.turn}'s turn.")
 
     turn_over = False
@@ -82,6 +88,7 @@ def player_turn():
         print(f"The top card on the discard stack is {gamestate.top_card()}.")
 
         if (0 < gamestate.pestkaarten_sum):
+            update_gamestate_status_user_interface(f"You need to throw a 'pestkaart' or you will be forced to draw {gamestate.pestkaarten_sum} new cards.")
             print(f"You need to throw a 'pestkaart' or you will be forced to draw {gamestate.pestkaarten_sum} new cards.")
 
         # The player is given the choice to play a card or draw a cards each turn
@@ -103,6 +110,7 @@ def player_turn():
                 update_user_interface(gamestate.discard_stack[0]) # player made a play, update GUI
                 # Checks whether player has won the game
                 if (gamestate.has_won(gamestate.turn)):
+                    update_gamestate_status_user_interface(f"Player {gamestate.turn} has won the game!")
                     print(f"Player {gamestate.turn} has won the game!")
                     print("hands = " + str(gamestate.hands)) # DEBUG
                     return True     
@@ -113,6 +121,7 @@ def player_turn():
                 
     # Checks whether player has won the game after the turn is over
     if (gamestate.has_won(gamestate.turn)):
+        update_gamestate_status_user_interface(f"Player {gamestate.turn} has won the game!")
         print(f"Player {gamestate.turn} has won the game!")
         print("hands = " + str(gamestate.hands)) # DEBUG
         return True
@@ -143,8 +152,6 @@ def update_user_interface(top_card):
     resize_playing_card_1_image = ImageTk.PhotoImage(original_playing_card_1_image)
     
     draw_stack_label.config(image = resize_playing_card_1_image)
-    # TODO: add textbar which shows the current action robot is performing / instruction player
-
     file_path_image_2 = os.path.abspath(f"cardrobot/Playing cards/{top_card}.png")
 
     original_playing_card_2_image = Image.open(file_path_image_2).resize((150,220))
@@ -153,6 +160,10 @@ def update_user_interface(top_card):
 
     discard_stack_label.config(image = resize_playing_card_2_image) # The top card on the discard stack  
 
+# Updates text widget which shows the current action robot is performing / an instruction for the player
+def update_gamestate_status_user_interface(string):
+    text_widget.config(text=string)
+
 def graphical_user_interface():
     root = Tk()
     root.title("A game of Pesten")
@@ -160,16 +171,30 @@ def graphical_user_interface():
     #root.iconbitmap()
     root.geometry("900x500")
     root.configure(background="green")
-    
-    main_frame = Frame(root, background = "green")
-    main_frame.pack(pady=20)
+
+    # Create the top frame, containing the cards
+    top_frame = Frame(root, background = "green")
+
+    # Create the bottom frame, containing the text widget
+    bottom_frame = Frame(root, background = "purple")
+
+    # Layout of the two frames inside root
+    root.grid_columnconfigure(0, weight=1)
+    root.grid_rowconfigure(1, weight=1) 
+
+    top_frame.grid(row=0, column=0, columnspan=2)
+    bottom_frame.grid(row=1, column=0, columnspan=2)
 
     # Create the frames for the two game stacks and the two hands
-    draw_stack_frame = LabelFrame(main_frame, text="Draw stack", border=0)
+    draw_stack_frame = LabelFrame(top_frame, text="Draw stack", font = ("Arial", 12), border=0)
     draw_stack_frame.grid(row=0, column=2, padx=20, pady=40, ipadx=20)
 
-    discard_stack_frame = LabelFrame(main_frame, text="Discard stack", border=0)
-    discard_stack_frame.grid(row=0, column=3, padx=20, pady=40, ipadx=20)
+    discard_stack_frame = LabelFrame(top_frame, text="Discard stack", font = ("Arial", 12), border=0)
+    discard_stack_frame.grid(row=0, column=3, padx=20, pady=40, ipadx=20) 
+
+    # Create the frame for the text widget
+    user_information_widget = LabelFrame(bottom_frame, text="", border=0)
+    user_information_widget.pack()
 
     # Put cards in the frames, this is done by putting images into labels
     global draw_stack_label 
@@ -179,6 +204,17 @@ def graphical_user_interface():
     global discard_stack_label 
     discard_stack_label = Label(discard_stack_frame, text="")
     discard_stack_label.pack(pady=20)
+
+    # Create label for the text widget
+    text_widget_label = Label(user_information_widget, text="The current game status:")
+    text_widget_label.pack()
+    text_widget_label.config(font = ("Arial", 12)) # specify font
+
+    # Create the text widget 
+    global text_widget
+    text_widget = Label(user_information_widget, height = 5, width = 40, text="") 
+    text_widget.config(text="")
+    text_widget.pack()
 
     # Call event loop which makes the window appear
     root.mainloop()
@@ -206,6 +242,7 @@ def playsession():
         print(gamestate) # DEBUG
         print(f"Difficulty level: {difficulty}")
 
+        update_gamestate_status_user_interface(f"The direction of play is {'clockwise' if gamestate.play_direction == 1 else 'anti-clockwise'}.")
         print(f"The direction of play is {'clockwise' if gamestate.play_direction == 1 else 'anti-clockwise'}.")
 
         game_done = False
@@ -224,6 +261,7 @@ def playsession():
 
         play_again = input("Play again (Yes/No)? ")
         if (0 < len(play_again) and play_again.lower()[0] == 'y'):
+            update_gamestate_status_user_interface(f"\nSo far, you have won {player_total_wins} games and the robot has won {robot_total_wins} games.")
             print(f"\nSo far, you have won {player_total_wins} games")
             print(f" and the robot has won {robot_total_wins} games.")
             continue
