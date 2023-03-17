@@ -78,7 +78,8 @@ def player_turn():
         update_gamestate_status_user_interface(f"Player {gamestate.turn}'s turn is skipped.")
         print(f"Player {gamestate.turn}'s turn is skipped.")
         return False
-
+    
+    update_text_gui_extra("The play direction is now clockwise.")
     update_gamestate_status_user_interface(f"It is player {gamestate.turn}'s turn.")
     print(f"It is player {gamestate.turn}'s turn.")
 
@@ -164,6 +165,9 @@ def update_user_interface(top_card):
 def update_gamestate_status_user_interface(string):
     text_widget.config(text=string)
 
+def update_text_gui_extra(string):
+    text_widget_extra.config(text=string)
+
 def graphical_user_interface():
     root = Tk()
     root.title("A game of Pesten")
@@ -212,9 +216,14 @@ def graphical_user_interface():
 
     # Create the text widget 
     global text_widget
-    text_widget = Label(user_information_widget, height = 5, width = 40, text="") 
+    text_widget = Label(user_information_widget, height = 2, width = 80, text="") 
     text_widget.config(text="")
     text_widget.pack()
+
+    global text_widget_extra
+    text_widget_extra = Label(user_information_widget, height = 2, width = 80, text="") 
+    text_widget_extra.config(text="")
+    text_widget_extra.pack()
 
     # Call event loop which makes the window appear
     root.mainloop()
