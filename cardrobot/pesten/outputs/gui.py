@@ -78,18 +78,18 @@ class GUIOutput(GameOutput):
         self.discard_stack_label.pack(pady=20)
 
         # Create label for the text widget
-        text_widget_label = Label(user_information_widget, text="The current game status:")
-        text_widget_label.pack()
-        text_widget_label.config(font = ("Arial", 12)) # specify font
+        self.text_widget_label = Label(user_information_widget, text="The current game status:")
+        self.text_widget_label.pack()
+        self.text_widget_label.config(font = ("Arial", 12)) # specify font
 
         # Create the text widgets
-        text_widget_turn = Label(user_information_widget, height = 2, width = 80, text="") 
-        text_widget_turn.config(text="")
-        text_widget_turn.pack()
+        self.text_widget_turn = Label(user_information_widget, height = 2, width = 80, text="") 
+        self.text_widget_turn.config(text="")
+        self.text_widget_turn.pack()
 
-        text_widget_extra = Label(user_information_widget, height = 2, width = 80, text="") 
-        text_widget_extra.config(text="")
-        text_widget_extra.pack()
+        self.text_widget_extra = Label(user_information_widget, height = 2, width = 80, text="") 
+        self.text_widget_extra.config(text="")
+        self.text_widget_extra.pack()
 
         # Call event loop which makes the window appear
         self.root.mainloop()
