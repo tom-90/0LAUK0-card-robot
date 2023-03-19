@@ -1,5 +1,6 @@
 from pesten.player import PestenPlayer
 from game.cards import Card
+from copy import deepcopy
 import random
 from pesten_camera import softmax_with_difficulty
 from pesten.types import PestenOutputType, PestenInputType
@@ -16,7 +17,7 @@ class PestenRobotPlayer(PestenPlayer):
     # Gives a score to the resulting state after the current player_id (only used by the robot) makes the move
     # Used by the robot to decide which move is a suiting move to make 
     def get_move_score(self, card: Card):
-        copied_state = self.state.copy()
+        copied_state = deepcopy(self.state)
         copied_player: PestenRobotPlayer = copied_state.get_current_player()
         old_hand_size = len(copied_player.hand)
         old_pestkaarten_sum = copied_state.pestkaarten_sum
