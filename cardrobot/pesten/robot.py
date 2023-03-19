@@ -2,8 +2,16 @@ from pesten.player import PestenPlayer
 from game.cards import Card
 from copy import deepcopy
 import random
-from pesten_camera import softmax_with_difficulty
 from pesten.types import PestenOutputType, PestenInputType
+import numpy as np
+
+# Converts arbitrary scores to probabilities using a modified softmax function
+# If difficulty = 0, the function returns a uniform probability for all scores 
+# If 0 < difficulty < 1, the function gives a higher probability to the highest score 
+# If difficulty = 1, the function gives approximately a probability of ~1 to the highest score, and ~0 to all other scores
+def softmax_with_difficulty(scores, diff):
+    b_x = np.power(1.0 + (diff ** 3), scores - np.max(scores)) # Note to self: the power of the difficulty (>= 1) can be played with to change relative probabilities
+    return b_x / b_x.sum()
 
 class PestenRobotPlayer(PestenPlayer):
     type = "robot"

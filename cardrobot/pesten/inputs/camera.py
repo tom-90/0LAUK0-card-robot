@@ -177,7 +177,6 @@ class CameraInput(GameInput):
             'verbose': False,
             'model': os.path.abspath(os.path.join(os.path.realpath(__file__), '../../../../model/best_weights.pt'))
         })
-        print(os.path.abspath(os.path.join(os.path.realpath(__file__), '../../../../model/best_weights.pt')))
 
         # The predictor function will keep predicting and returning values as we go
         for data in predictor(WebcamSource(os.getenv('WEBCAM_SOURCE'), os.getenv('WEBCAM_RESOLUTION'), predictor), stream=True):
