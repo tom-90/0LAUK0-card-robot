@@ -36,11 +36,11 @@ class PestenGameState(GameState):
         self.difficulty = 0.5
 
         for player in self.players:
+            self.set_current_player(player)
             player.hand.clear()
             player.draw_cards(7)
 
-    def has_started(self):
-        return self.next_player_index >= 0
+        self.set_current_player(None)
 
     def is_finished(self, silent=False):
         for player in self.players:

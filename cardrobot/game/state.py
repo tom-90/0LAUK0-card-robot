@@ -6,6 +6,7 @@ from game.output import GameOutput, OutputType
 class GameState():
     players: list[Player]
     next_player_index = -1
+    has_started = False
     inputs: list[GameInput]
     outputs: list[GameOutput]
 
@@ -15,6 +16,7 @@ class GameState():
         self.outputs = []
 
     def setup(self):
+        self.has_started = False
         self.next_player_index = -1
 
     def destroy(self):
@@ -33,6 +35,12 @@ class GameState():
     def get_current_player(self) -> Player:
         assert len(self.players) > 0, "GameState should have at least one player"
         return self.players[self.next_player_index]
+
+    def set_current_player(self, player):
+        if player is None:
+            self.next_player_index = -1
+        else:
+            self.next_player_index = player.index
 
     def add_player(self, player: Player):
         player.set_index(len(self.players))
@@ -62,6 +70,7 @@ class GameState():
         player.do_turn()
 
     def do_game(self):
+        self.has_started = True
         while not self.is_finished():
             self.do_turn()
 

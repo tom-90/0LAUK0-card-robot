@@ -1,32 +1,44 @@
 from dotenv import load_dotenv
 load_dotenv()
 
-from ultralytics.yolo.v8 import detect
-import os
-from webcam import WebcamSource
+from pesten.state import PestenGameState
+from pesten.robot import PestenRobotPlayer
+from pesten.human import PestenHumanPlayer
+from pesten.inputs.saved_terminal import SavedTerminalInput
+from pesten.inputs.terminal import TerminalInput
+from pesten.inputs.camera import CameraInput
+from pesten.outputs.terminal import TerminalOutput
+from pesten.outputs.gui import GUIOutput
+from threading import Thread
+from time import sleep
 
-def predict():
-    predictor = detect.DetectionPredictor(overrides={
-        'show': True,
-        'save': False,
-        'verbose': False,
-        'model': os.path.abspath(os.path.join(os.path.realpath(__file__), '../../model/best_weights.pt'))
-    })
+def start_game(state: PestenGameState):
+    state.setup()
+    state.do_game()
 
-    # The predictor function will keep predicting and returning values as we go
-    for data in predictor(WebcamSource(os.getenv('WEBCAM_SOURCE'), os.getenv('WEBCAM_RESOLUTION'), predictor), stream=True):
-        # data contains all predictions made in the current frame/image from the webcam
+if __name__ == "__main__":
+    state = PestenGameState()
 
-        data = data.to("cpu") # Move data to CPU
+    state.add_player(PestenRobotPlayer(state))
+    state.add_player(PestenHumanPlayer(state))
 
-        # Print the bounding boxes and their classes
-        for boxIndex, box in enumerate(data.boxes):
-            print(f'Box {boxIndex}: {box.xyxy.numpy()}')
-            for predIndex, cls in enumerate(box.cls):
-                clsName = data.names[int(cls)]
-                print(f' - Class: {clsName} (conf={box.conf[predIndex]})')
+    # input = SavedTerminalInput(state, "saved_inputs.txt") Use this to load saved inputs
+    input = SavedTerminalInput(state)
 
-        if(len(data.boxes) > 0):
-            print('\n')
+    state.use(CameraInput(state))
+    state.use(TerminalOutput(state))
+    state.use(GUIOutput(state))
 
-predict()
+    game_thread = Thread(target=start_game, args=[state])
+    game_thread.daemon = True
+    game_thread.start()
+
+    try:
+        while not state.has_started or not state.is_finished(True):
+            sleep(1)
+    except KeyboardInterrupt:
+        print("\nGame interrupted")
+
+    input.save("saved_inputs.txt")
+
+    state.destroy()
