@@ -119,7 +119,7 @@ class GUIOutput(GameOutput):
         self.text_widget_extra.config(text=string)
 
     def player_turn(self, player: PestenPlayer):
-        self.update_text_ui_turn(f"It is player {player}'s turn")
+        self.update_text_ui_turn(f"It is {player}'s turn")
         self.update_ui()
         pass
 
@@ -132,8 +132,8 @@ class GUIOutput(GameOutput):
         pass
 
     def player_won(self, player: PestenPlayer):
-        self.update_text_ui_turn(f"Player {player} has won the game!")
-        self.update_text_ui_extra(f"Player {player} has won the game!")
+        self.update_text_ui_turn(f"{player} has won the game!")
+        self.update_text_ui_extra(f"{player} has won the game!")
         pass
 
     def effect_draw_cards(self, amount: int): #TODO: add parameter, which shows which player's turn it is currently
@@ -147,8 +147,8 @@ class GUIOutput(GameOutput):
             self.update_text_ui_extra("The play direction is now counterclockwise.")
         pass
 
-    def effect_extra_turn(self):
-        self.update_text_ui_extra("The player gets an extra turn for playing this card.")
+    def effect_extra_turn(self, player):
+        self.update_text_ui_extra(f"{player} gets an extra turn for playing this card.")
         pass
     
     def effect_skip_turn(self):

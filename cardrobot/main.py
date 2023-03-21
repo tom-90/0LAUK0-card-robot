@@ -11,10 +11,41 @@ from pesten.outputs.terminal import TerminalOutput
 from pesten.outputs.gui import GUIOutput
 from threading import Thread
 from time import sleep
+from pesten.types import PestenInputType, PestenOutputType
 
-def start_game(state: PestenGameState):
-    state.setup()
-    state.do_game()
+# TODO: tune the delta difficulty to converge to the desired win ratio faster
+def new_difficulty(old_difficulty: float, real_win_ratio: float, desired_win_ratio: float, static_difficulty: bool = False) -> float:
+    difficulty = old_difficulty
+    if not static_difficulty:
+        delta_difficulty = (real_win_ratio - desired_win_ratio) ** 3
+        difficulty = old_difficulty + delta_difficulty
+
+    return min(1.0, max(0.0, difficulty))
+
+def playsession(state: PestenGameState):
+    robot_total_wins = 0
+    player_total_wins = 0
+    difficulty = state.input(PestenInputType.STARTING_DIFFICULTY)
+    
+    global playsession_done
+    while not playsession_done:
+        state.output(PestenOutputType.CURRENT_DIFFICULTY, difficulty)
+
+        state.setup()
+
+        winner = state.do_game(difficulty)
+        if (winner.type == "robot"):
+            robot_total_wins += 1
+        else:
+            player_total_wins += 1
+
+        win_ratio = player_total_wins/(player_total_wins+robot_total_wins) if (player_total_wins+robot_total_wins) > 0 else 0
+        print(f"Player wins: {player_total_wins}, Robot wins: {robot_total_wins}, win ratio: {win_ratio}")
+
+        difficulty = new_difficulty(difficulty, win_ratio, 0.7, static_difficulty=False)
+
+        playsession_done = not state.input(PestenInputType.PLAY_AGAIN)
+    return True
 
 if __name__ == "__main__":
     state = PestenGameState()
@@ -25,18 +56,22 @@ if __name__ == "__main__":
     # input = SavedTerminalInput(state, "saved_inputs.txt") Use this to load saved inputs
     input = SavedTerminalInput(state)
 
-    state.use(CameraInput(state))
+    state.use(TerminalInput(state))
     state.use(TerminalOutput(state))
     state.use(GUIOutput(state))
 
-    game_thread = Thread(target=start_game, args=[state])
+    global playsession_done
+    playsession_done = False
+
+    game_thread = Thread(target=playsession, args=[state])
     game_thread.daemon = True
     game_thread.start()
 
+    
     try:
-        while not state.has_started or not state.is_finished(True):
+        while not playsession_done:
             sleep(1)
-    except KeyboardInterrupt:
+    except Exception as e:
         print("\nGame interrupted")
 
     input.save("saved_inputs.txt")

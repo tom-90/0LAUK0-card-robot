@@ -6,6 +6,7 @@ class TerminalOutput(GameOutput):
     def __init__(self, state):
         super().__init__(state)
 
+        self.register(PestenOutputType.CURRENT_DIFFICULTY, self.current_difficulty)
         self.register(PestenOutputType.PLAYER_TURN, self.player_turn)
         self.register(PestenOutputType.PLAYER_DRAWS, self.player_draws)
         self.register(PestenOutputType.PLAYER_PLAYS, self.player_plays)
@@ -15,6 +16,9 @@ class TerminalOutput(GameOutput):
         self.register(PestenOutputType.EFFECT_EXTRA_TURN, self.effect_extra_turn)
         self.register(PestenOutputType.EFFECT_SKIP_TURN, self.effect_skip_turn)
         self.register(PestenOutputType.ROBOT_MOVE_STATS, self.robot_move_stats)
+
+    def current_difficulty(self, difficulty: float):
+        print(f"The current difficulty is {difficulty}.")
 
     def player_turn(self, player: PestenPlayer):
         print(f"It is {player}'s turn.")
@@ -39,8 +43,8 @@ class TerminalOutput(GameOutput):
     def effect_reverse_direction(self, is_clockwise: bool):
         print(f"The direction of play has been reversed and is now {'clockwise' if is_clockwise else 'counter-clockwise'}.")
 
-    def effect_extra_turn(self):
-        print(f"The current player gets an extra turn.")
+    def effect_extra_turn(self, player: PestenPlayer):
+        print(f"{player} gets an extra turn.")
     
     def effect_skip_turn(self):
         print(f"The next player is forced to skip their turn.")

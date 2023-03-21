@@ -14,7 +14,7 @@ class PestenPlayer(Player):
         self.hand = CardStack()
 
     def __str__(self):
-        return f"{self.type.capitalize()} player {self.index}"
+        return f"{self.type} player {self.index}"
 
     def __repr__(self):
         return f"{self.type}-{self.index}"

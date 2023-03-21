@@ -10,7 +10,7 @@ import numpy as np
 # If 0 < difficulty < 1, the function gives a higher probability to the highest score 
 # If difficulty = 1, the function gives approximately a probability of ~1 to the highest score, and ~0 to all other scores
 def softmax_with_difficulty(scores, diff):
-    b_x = np.power(1.0 + (diff ** 3), scores - np.max(scores)) # Note to self: the power of the difficulty (>= 1) can be played with to change relative probabilities
+    b_x = np.power(1.0 + (diff ** 1.5), scores - np.max(scores)) # Note to self: the power of the difficulty (>= 1) can be played with to change relative probabilities
     return b_x / b_x.sum()
 
 class PestenRobotPlayer(PestenPlayer):
@@ -102,18 +102,18 @@ class PestenRobotPlayer(PestenPlayer):
 
             self.hand += card
 
-    def do_turn(self):
+    def do_turn(self, difficulty: float = 0.0):
         self.state.output(PestenOutputType.PLAYER_TURN, self)
 
         turn_over = False
-        while not turn_over and not self.state.is_finished():
+        while not turn_over and not self.state.is_finished(True):
 
             # Obtains the list of valid moves
             valid_moves_lst = self.get_valid_moves()
 
             # Obtains a list of scores for each valid move
             valid_moves_scores = [self.get_move_score(move) for move in valid_moves_lst]
-            valid_moves_probs = softmax_with_difficulty(valid_moves_scores, self.state.difficulty)
+            valid_moves_probs = softmax_with_difficulty(valid_moves_scores, difficulty)
 
             self.state.output(PestenOutputType.ROBOT_MOVE_STATS, self, valid_moves_lst, valid_moves_scores, valid_moves_probs)
 
