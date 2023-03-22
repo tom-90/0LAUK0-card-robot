@@ -1,3 +1,4 @@
+import time
 from game.output import GameOutput
 from pesten.types import PestenOutputType
 from pesten.player import PestenPlayer
@@ -50,7 +51,7 @@ class GUIOutput(GameOutput):
         top_frame = Frame(self.root, background = "green")
 
         # Create the bottom frame, containing the text widget
-        bottom_frame = Frame(self.root, background = "purple")
+        bottom_frame = Frame(self.root, background = "green")
 
         # Layout of the two frames inside root
         self.root.grid_columnconfigure(0, weight=1)
@@ -60,10 +61,10 @@ class GUIOutput(GameOutput):
         bottom_frame.grid(row=1, column=0, columnspan=2)
         
         # Create the frames for the two game stacks and the two hands
-        draw_stack_frame = LabelFrame(top_frame, text="Draw stack", font = ("Arial", 12), border=0)
+        draw_stack_frame = LabelFrame(top_frame, text="Draw stack", font = ("Arial", 14, 'bold'), border=0)
         draw_stack_frame.grid(row=0, column=2, padx=20, pady=40, ipadx=20)
 
-        discard_stack_frame = LabelFrame(top_frame, text="Discard stack", font = ("Arial", 12), border=0)
+        discard_stack_frame = LabelFrame(top_frame, text="Discard stack", font = ("Arial", 14, 'bold'), border=0)
         discard_stack_frame.grid(row=0, column=3, padx=20, pady=40, ipadx=20)
 
         # Create the frame for the text widget
@@ -79,17 +80,17 @@ class GUIOutput(GameOutput):
 
         # Create label for the text widget
         self.text_widget_label = Label(user_information_widget, text="The current game status:")
-        self.text_widget_label.pack()
-        self.text_widget_label.config(font = ("Arial", 12)) # specify font
+        self.text_widget_label.grid(row=1) # pack()
+        self.text_widget_label.config(font = ("Arial", 14, 'bold')) # specify font
 
         # Create the text widgets
-        self.text_widget_turn = Label(user_information_widget, height = 2, width = 80, text="") 
-        self.text_widget_turn.config(text="")
-        self.text_widget_turn.pack()
+        self.text_widget_turn = Label(user_information_widget, height = 2, width = 90) 
+        self.text_widget_turn.config(text="", font = ("Arial", 12))
+        self.text_widget_turn.grid(row=2) # pack()
 
-        self.text_widget_extra = Label(user_information_widget, height = 2, width = 80, text="") 
-        self.text_widget_extra.config(text="")
-        self.text_widget_extra.pack()
+        self.text_widget_extra = Label(user_information_widget, height = 2, width = 90) 
+        self.text_widget_extra.config(text="", font = ("Arial", 12))
+        self.text_widget_extra.grid(row=3) # pack()
 
         # Call event loop which makes the window appear
         self.root.mainloop()
@@ -112,11 +113,16 @@ class GUIOutput(GameOutput):
     
     # Updates text widget which shows whose turn it is
     def update_text_ui_turn(self, string):
-        self.text_widget_turn.config(text=string)
+        self.text_widget_turn.config(text=string, fg='red')
+        time.sleep(0.3)
+        self.text_widget_turn.config(text=string, fg='black')
+        #self.text_widget_turn.after(2000, self.text_widget_turn.config(fg='purple'))
 
     # Updates text widget which shows the current action robot is performing / an instruction for the player
     def update_text_ui_extra(self, string):
-        self.text_widget_extra.config(text=string)
+        self.text_widget_extra.config(text=string, fg='red')
+        time.sleep(0.3)
+        self.text_widget_extra.config(text=string, fg='black')
 
     def player_turn(self, player: PestenPlayer):
         self.update_text_ui_turn(f"It is player {player}'s turn")
@@ -136,8 +142,9 @@ class GUIOutput(GameOutput):
         self.update_text_ui_extra(f"Player {player} has won the game!")
         pass
 
-    def effect_draw_cards(self, amount: int): #TODO: add parameter, which shows which player's turn it is currently
-        self.update_text_ui_turn(f"Pestkaart(en) is/are on the discard stack, {amount} cards need to be drawn or a pestkaart needs to be thrown.")
+    def effect_draw_cards(self, amount: int): 
+        player_turn = self.state.get_current_player()
+        self.update_text_ui_extra(f"A(nother) Pestkaart is on the discard stack, player {player_turn} needs to draw {amount} card(s) or throw a pestkaart.")
         pass
 
     def effect_reverse_direction(self, is_clockwise: bool):
@@ -148,11 +155,13 @@ class GUIOutput(GameOutput):
         pass
 
     def effect_extra_turn(self):
-        self.update_text_ui_extra("The player gets an extra turn for playing this card.")
+        player_turn = self.state.get_current_player()
+        self.update_text_ui_extra(f"Player {player_turn} gets an extra turn for playing this card.")
         pass
     
     def effect_skip_turn(self):
-        self.update_text_ui_extra("The turn of the next player is skipped.")
+        next_player_turn = self.state.next_player()
+        self.update_text_ui_extra(f"The turn of player {next_player_turn} is skipped.")
         pass
 
     def __deepcopy__(self, obj):
