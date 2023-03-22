@@ -17,6 +17,7 @@ class PestenOutputType(OutputType):
     ROBOT_MOVE_STATS = 'robot_move_stats' # Debugging
 
 class PestenInputType(InputType):
+    USE_MCTS = 'use_mcts'
     STARTING_DIFFICULTY = 'starting_difficulty'
 
     READ_TOP_CARD = 'read_top_card'
