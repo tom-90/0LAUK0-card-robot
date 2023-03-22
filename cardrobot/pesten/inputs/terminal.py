@@ -32,6 +32,7 @@ class TerminalInput(GameInput):
     def __init__(self, state):
         super().__init__(state)
 
+        self.register(PestenInputType.USE_MCTS, self.get_use_mcts)
         self.register(PestenInputType.STARTING_DIFFICULTY, self.get_starting_difficulty)
         self.register(PestenInputType.READ_TOP_CARD, self.get_top_card)
         self.register(PestenInputType.READ_DRAWN_CARD, self.get_drawn_card)
@@ -40,6 +41,20 @@ class TerminalInput(GameInput):
         self.register(PestenInputType.WAIT_FOR_PLAY_OR_DRAW, self.wait_for_play_or_draw)
 
         self.register(PestenInputType.PLAY_AGAIN, self.play_again)
+
+    def get_use_mcts(self):
+        use_mcts = None
+
+        while use_mcts is None:
+            use_mcts = self.input("Use mcts? (True/False): ")
+            if use_mcts == "True":
+                return True
+            elif use_mcts == "False":
+                return False
+            else:
+                use_mcts = None
+        return False
+
 
     def get_starting_difficulty(self):
         difficulty = None
