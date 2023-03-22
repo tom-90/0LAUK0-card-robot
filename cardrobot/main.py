@@ -25,6 +25,7 @@ def new_difficulty(old_difficulty: float, real_win_ratio: float, desired_win_rat
 def playsession(state: PestenGameState):
     robot_total_wins = 0
     player_total_wins = 0
+    use_mcts = state.input(PestenInputType.USE_MCTS)
     difficulty = state.input(PestenInputType.STARTING_DIFFICULTY)
     
     global playsession_done
@@ -33,7 +34,7 @@ def playsession(state: PestenGameState):
 
         state.setup()
 
-        winner = state.do_game(difficulty)
+        winner = state.do_game(difficulty, use_mcts)
         if (winner.type == "robot"):
             robot_total_wins += 1
         else:
