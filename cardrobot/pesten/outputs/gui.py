@@ -114,15 +114,20 @@ class GUIOutput(GameOutput):
     # Updates text widget which shows whose turn it is
     def update_text_ui_turn(self, string):
         self.text_widget_turn.config(text=string, fg='red')
-        time.sleep(0.3)
-        self.text_widget_turn.config(text=string, fg='black')
-        #self.text_widget_turn.after(2000, self.text_widget_turn.config(fg='purple'))
+        # Define a new function to change the color to black
+        def change_color_to_black():
+            self.text_widget_turn.config(fg='black')
+        # Schedule the new function to be called after 300ms 
+        self.text_widget_turn.after(300, change_color_to_black)
 
     # Updates text widget which shows the current action robot is performing / an instruction for the player
     def update_text_ui_extra(self, string):
         self.text_widget_extra.config(text=string, fg='red')
-        time.sleep(0.3)
-        self.text_widget_extra.config(text=string, fg='black')
+         # Define a new function to change the color to black
+        def change_color_to_black():
+            self.text_widget_extra.config(fg='black')
+        # Schedule the new function to be called after 300ms 
+        self.text_widget_extra.after(300, change_color_to_black)
 
     def player_turn(self, player: PestenPlayer):
         self.update_text_ui_turn(f"It is {player}'s turn")
