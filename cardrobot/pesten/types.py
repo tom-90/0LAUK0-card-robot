@@ -2,6 +2,8 @@ from game.output import OutputType
 from game.input import InputType
 
 class PestenOutputType(OutputType):
+    CURRENT_DIFFICULTY = 'current_difficulty'
+
     PLAYER_TURN = 'player_turn'
     PLAYER_DRAWS = 'player_draws'
     PLAYER_PLAYS = 'player_plays'
@@ -15,8 +17,13 @@ class PestenOutputType(OutputType):
     ROBOT_MOVE_STATS = 'robot_move_stats' # Debugging
 
 class PestenInputType(InputType):
+    USE_MCTS = 'use_mcts'
+    STARTING_DIFFICULTY = 'starting_difficulty'
+
     READ_TOP_CARD = 'read_top_card'
     READ_DRAWN_CARD = 'read_drawn_card'
     WAIT_FOR_SHUFFLE = 'wait_for_shuffle'
     WAIT_FOR_TOP_CARD = 'wait_for_top_card'
     WAIT_FOR_PLAY_OR_DRAW = 'wait_for_play_or_draw'
+
+    PLAY_AGAIN = 'play_again'

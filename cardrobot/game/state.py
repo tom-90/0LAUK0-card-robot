@@ -64,15 +64,16 @@ class GameState():
         
         return clone
 
-    def do_turn(self):
-        player = self.next_player()
-
-        player.do_turn()
-
-    def do_game(self):
+    def do_game(self, difficulty: float = 0.0, use_mcts=False):
         self.has_started = True
         while not self.is_finished():
-            self.do_turn()
+            player = self.next_player()
+            if player.type == "robot":
+                player.do_turn(difficulty, use_mcts)
+            else:
+                player.do_turn()
+
+        return self.get_winner()
 
     def use(self, io: GameInput | GameOutput | None):
         if isinstance(io, GameInput):
@@ -102,4 +103,3 @@ class GameState():
     # Methods to be implemented by subclasses
     def is_finished(self):
         raise NotImplementedError()
-

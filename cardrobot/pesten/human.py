@@ -15,7 +15,7 @@ class PestenHumanPlayer(PestenPlayer):
 
     def do_turn(self):
         turn_over = False
-        while not turn_over and not self.state.is_finished():
+        while not turn_over and not self.state.is_finished(True):
             self.state.output(PestenOutputType.PLAYER_TURN, self)
             card = self.state.input(PestenInputType.WAIT_FOR_PLAY_OR_DRAW)
 

@@ -1,16 +1,18 @@
 from pesten.player import PestenPlayer
 from game.cards import Card
 from copy import deepcopy
+from mcts import mcts
 import random
 from pesten.types import PestenOutputType, PestenInputType
 import numpy as np
+from pesten.interface import StateInterface
 
 # Converts arbitrary scores to probabilities using a modified softmax function
 # If difficulty = 0, the function returns a uniform probability for all scores 
 # If 0 < difficulty < 1, the function gives a higher probability to the highest score 
 # If difficulty = 1, the function gives approximately a probability of ~1 to the highest score, and ~0 to all other scores
 def softmax_with_difficulty(scores, diff):
-    b_x = np.power(1.0 + (diff ** 3), scores - np.max(scores)) # Note to self: the power of the difficulty (>= 1) can be played with to change relative probabilities
+    b_x = np.power(1.0 + (diff ** 1.5), scores - np.max(scores)) # Note to self: the power of the difficulty (>= 1) can be played with to change relative probabilities
     return b_x / b_x.sum()
 
 class PestenRobotPlayer(PestenPlayer):
@@ -102,23 +104,35 @@ class PestenRobotPlayer(PestenPlayer):
 
             self.hand += card
 
-    def do_turn(self):
+    def do_turn(self, difficulty: float = 0.0, use_mcts=False):
         self.state.output(PestenOutputType.PLAYER_TURN, self)
-
+        self.use_mcts = use_mcts
         turn_over = False
-        while not turn_over and not self.state.is_finished():
+        while not turn_over and not self.state.is_finished(True):
+            if self.use_mcts:
+                initialState = StateInterface(self.state, self.hand, self.state.pestkaarten_sum)
+                searcher = mcts(timeLimit=1000)             # iterationLimit=500
+                action = searcher.search(initialState=initialState)
+                if action != -1:
+                    move = Card(action.rank_id, action.suit_id)
+                else:
+                    move = -1
+                print("Action is " + str(move))
+                print("Robot hand:" + str(self.hand))
+                print("Discard stack:" + str(self.state.discard_stack))
+                turn_over = self.do_move(move)
+            else:
+                # Obtains the list of valid moves
+                valid_moves_lst = self.get_valid_moves()
 
-            # Obtains the list of valid moves
-            valid_moves_lst = self.get_valid_moves()
+                # Obtains a list of scores for each valid move
+                valid_moves_scores = [self.get_move_score(move) for move in valid_moves_lst]
+                valid_moves_probs = softmax_with_difficulty(valid_moves_scores, difficulty)
 
-            # Obtains a list of scores for each valid move
-            valid_moves_scores = [self.get_move_score(move) for move in valid_moves_lst]
-            valid_moves_probs = softmax_with_difficulty(valid_moves_scores, self.state.difficulty)
+                self.state.output(PestenOutputType.ROBOT_MOVE_STATS, self, valid_moves_lst, valid_moves_scores, valid_moves_probs)
 
-            self.state.output(PestenOutputType.ROBOT_MOVE_STATS, self, valid_moves_lst, valid_moves_scores, valid_moves_probs)
+                # Randomly chooses a move weighted on the probabilities, chosen_move == -1 means drawing a card
+                chosen_move = random.choices(valid_moves_lst, weights=valid_moves_probs)[0] 
 
-            # Randomly chooses a move weighted on the probabilities, chosen_move == -1 means drawing a card
-            chosen_move = random.choices(valid_moves_lst, weights=valid_moves_probs)[0] 
-
-            # The chosen move is made and turn_over is updated accordingly
-            turn_over = self.do_move(chosen_move)
+                # The chosen move is made and turn_over is updated accordingly
+                turn_over = self.do_move(chosen_move)
