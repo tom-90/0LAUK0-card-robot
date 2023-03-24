@@ -42,8 +42,10 @@ class GUIOutput(GameOutput):
     def init_ui(self):
         self.root = Tk()
         self.root.title("A game of Pesten")
+
         # Sets the icon of the window
-        #root.iconbitmap()
+        self.root.iconbitmap("cardrobot/Other images/App icon.ico")
+
         self.root.geometry("900x500")
         self.root.configure(background="green")
 
