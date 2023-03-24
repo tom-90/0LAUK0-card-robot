@@ -4,7 +4,7 @@ from pesten.types import PestenOutputType
 from pesten.player import PestenPlayer
 from pesten.state import PestenGameState
 from PIL import Image, ImageTk
-from tkinter import Frame, LabelFrame
+from tkinter import Button, Frame, LabelFrame, PhotoImage, Scrollbar, Text, Toplevel
 from tkinter import Label
 from tkinter import Tk
 import os
@@ -65,7 +65,7 @@ class GUIOutput(GameOutput):
         draw_stack_frame.grid(row=0, column=2, padx=20, pady=40, ipadx=20)
 
         discard_stack_frame = LabelFrame(top_frame, text="Discard stack", font = ("Arial", 14, 'bold'), border=0)
-        discard_stack_frame.grid(row=0, column=3, padx=20, pady=40, ipadx=20)
+        discard_stack_frame.grid(row=0, column=4, padx=20, pady=40, ipadx=20)
 
         # Create the frame for the text widget
         user_information_widget = LabelFrame(bottom_frame, text="", border=0)
@@ -90,10 +90,47 @@ class GUIOutput(GameOutput):
 
         self.text_widget_extra = Label(user_information_widget, height = 2, width = 90) 
         self.text_widget_extra.config(text="", font = ("Arial", 12))
-        self.text_widget_extra.grid(row=3) # pack()
+        self.text_widget_extra.grid(row=4) # pack()
+        
+        # Import the question_mark image using PhotoImage function
+        question_image_file_path = os.path.abspath("cardrobot/Other images/question_mark.svg.png")
+        original_question_image = Image.open(question_image_file_path).resize((100,100))
+        self.resized_question_image = ImageTk.PhotoImage(original_question_image)
+
+        # Create explanation button and make background color green
+        self.settings_button = Button(top_frame, image=self.resized_question_image, command = self.open_settings_popup)#, height = 5, width = 5)
+        self.settings_button.config(bg='green')
+        self.settings_button.grid(row=0, column=3)
 
         # Call event loop which makes the window appear
         self.root.mainloop()
+
+    def open_settings_popup(self):
+        self.settings_popup = Toplevel(self.root)
+        self.settings_popup.geometry('900x400')
+        self.settings_popup.title("User guide")
+
+        # Create text widget inside window
+        self.text = Text(self.settings_popup, state="normal", wrap="word", width=90)
+        self.text.grid(row = 0, column = 0, sticky="nsew", padx=2, pady=2)
+    
+        # Create scrollbar and connect it with text widget
+        self.scrollbar = Scrollbar(self.settings_popup, command=self.text.yview)
+        self.scrollbar.grid(row=0, column=1, sticky="nsew")
+        self.text['yscrollcommand'] = self.scrollbar.set
+
+        # Read text from file and insert it into the text widget
+        file_path_user_guide = os.path.abspath("User guide.txt")
+        with open(file_path_user_guide, encoding='utf-8') as f:
+            user_guide_text = f.read()
+        self.text.insert('end', user_guide_text)
+        self.text.config(state="disabled", font = ("Arial", 12)) # Make it read-only
+
+        # Make the headers of the text bold
+        self.text.tag_configure("bold", font=("Arial", 14, "bold"))
+        self.text.tag_add("bold", "1.0", "1.10")
+        self.text.tag_add("bold", "6.0", "6.10")
+        self.text.tag_add("bold", "23.0", "23.21")
 
     def update_ui(self):
         top_card = self.state.get_top_card()
