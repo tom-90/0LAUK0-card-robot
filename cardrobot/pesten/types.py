@@ -3,6 +3,7 @@ from game.input import InputType
 
 class PestenOutputType(OutputType):
     CURRENT_DIFFICULTY = 'current_difficulty'
+    CANT_START_WITH_PESTKAART = 'cant_start_with_pestkaart'
 
     PLAYER_TURN = 'player_turn'
     PLAYER_DRAWS = 'player_draws'

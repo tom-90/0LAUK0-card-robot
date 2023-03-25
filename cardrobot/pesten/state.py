@@ -29,6 +29,7 @@ class PestenGameState(GameState):
         self.discard_stack += self.input(PestenInputType.READ_TOP_CARD)
         self.draw_stack.pop()
         while (self.get_top_card().rank_id in [0,2]):
+            self.output(PestenOutputType.CANT_START_WITH_PESTKAART)
             self.discard_stack += self.input(PestenInputType.READ_TOP_CARD)
             self.draw_stack.pop()
 
@@ -59,11 +60,14 @@ class PestenGameState(GameState):
     def get_top_card(self):
         assert len(self.discard_stack) > 0, "There is no top card on an empty discard stack"
         return self.discard_stack.cards[-1]
+    
+    def advance_turn(self):
+        self.current_player_index = (self.current_player_index + self.play_direction) % len(self.players)
+        return self.current_player_index
 
     def next_player(self) -> PestenPlayer:
         assert len(self.players) > 0, "GameState should have at least one player"
-        self.next_player_index = (self.next_player_index + self.play_direction) % len(self.players)
-        return self.players[self.next_player_index]
+        return self.players[(self.current_player_index + self.play_direction) % len(self.players)]
 
     # applies the special effect of the given card if it has any
     # returns whether the turn is over or not
@@ -83,7 +87,7 @@ class PestenGameState(GameState):
         elif (card.rank_id == 8): # If chosen move is playing a card with rank 8, the turn of the next player is skipped
             if not virtual:
                 self.output(PestenOutputType.EFFECT_SKIP_TURN)
-            self.next_player()
+            self.advance_turn()
         return True
 
     def reshuffle(self, virtual = False):

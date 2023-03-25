@@ -35,7 +35,7 @@ class PestenRobotPlayer(PestenPlayer):
 
         # the 2 lines below make the move and if applicable advances the turn (so the score is calculated 1 turn in the future)
         if (copied_player.do_move(card, virtual=True)):
-            copied_state.next_player()
+            copied_state.advance_turn()
 
         next_player = copied_state.get_current_player()
             

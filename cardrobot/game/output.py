@@ -16,6 +16,9 @@ class GameOutput():
         self.state = state
         self.handlers = {}
 
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}({self.state})"
+
     def destroy(self):
         pass
 

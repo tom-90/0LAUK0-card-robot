@@ -18,7 +18,7 @@ def new_difficulty(old_difficulty: float, real_win_ratio: float, desired_win_rat
     difficulty = old_difficulty
     if not static_difficulty:
         delta_difficulty = (real_win_ratio - desired_win_ratio) ** 3
-        difficulty = old_difficulty + delta_difficulty
+        difficulty = old_difficulty + 10 * delta_difficulty
 
     return min(1.0, max(0.0, difficulty))
 
