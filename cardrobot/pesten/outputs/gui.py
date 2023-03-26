@@ -132,7 +132,6 @@ class GUIOutput(GameOutput):
         self.text.tag_configure("bold", font=("Arial", 14, "bold"))
         self.text.tag_add("bold", "1.0", "1.10")
         self.text.tag_add("bold", "6.0", "6.10")
-        self.text.tag_add("bold", "23.0", "23.21")
 
     def update_ui(self):
         top_card = self.state.get_top_card()
@@ -169,6 +168,9 @@ class GUIOutput(GameOutput):
         self.text_widget_extra.after(300, change_color_to_black)
 
     def player_turn(self, player: PestenPlayer):
+        # Empty the extra game state information text widget, because that information does not hold for the next turn
+        self.update_text_ui_extra(" ")
+        # Update the player turn text widget with whose turn it currently is
         self.update_text_ui_turn(f"It is {player}'s turn")
         self.update_ui()
         pass

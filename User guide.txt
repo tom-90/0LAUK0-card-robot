@@ -4,23 +4,27 @@ After setting up your camera, you’ll be asked to draw 7 cards which you can ke
 In the “The current game status” text-box important information about the current game state will be displayed. You’ll be notified whose turn it currently is and will be updated about the effects of the cards that get played. The discard stack will simply display the card that is currently the top card of the discard stack in the physical game that is being played. Additionally, a question mark button is available which leads to a window explaining the usage of this product and a more detailed description of the game rules, which can be read below.
 
 Game rules
-As generally known, many people use a different set of rules when playing a game of "Pesten". Hence, we will explicitly state which rules are used for this program.
-The rules:
-* Playing card with rank 0, the "joker" => This is a "pestkaart", which means the next player needs to take new playing cards from the playing stack. In the case of a Joker, the next player needs to take 5 new playing cards from the playing stack.
-* Playing card with rank 1, the "ace" => When this card is played, the direction of play reverses.
-* Playing card with rank 2 => This is a "pestkaart", which means the next player needs to take new playing cards from the playing stack. In the case of a playing card with the rank 2, the next player needs to take 2 new playing cards from the playing stack.
-* Playing card with rank 3 => There is no special rule for this card.
-* Playing card with rank 4 => There is no special rule for this card.
-* Playing card with rank 5 => There is no special rule for this card.
-* Playing card with rank 6 => There is no special rule for this card.
-* Playing card with rank 7 => "Zeven blijft kleven": the player that throws this card on the discard stack must throw another card with the same suit or rank onto the discard stack.
-* Playing card with rank 8 => "acht wacht": the next player has to pass its turn and is not allowed to throw a card or draw a card. So, when playing with two players, the player who throws a playing card with rank 8 on the discard stack again gets the turn.
-* Playing card with rank 10 => There is no special rule for this card.
-* Playing card with rank 11, the "jack" => There is no special rule for this card.
-* Playing card with rank 12, the "queen" => There is no special rule for this card.
-* Playing card with rank 13, the "king" => There is no special rule for this card.
+1.	The first card is not allowed to be a “pest” card.
+So it is not allowed to be a “Joker”, an “Ace”, a rank 2, a rank 7 or a rank 8.
+2.	You may put a card with the same rank (0, 1, …, 13) or same suits (diamonds, hearts, spades or clubs) on top of the previous card. If you do not have such a card or do not wish to play it, you have to pick a card from the stack.
+3.	When playing a card with rank 0, the “Joker”, the next player needs to take 5 playing cards from the card stack. 
+4.	When playing a card with rank 1, the “Ace”, the direction is reversed. Note, when playing with two players, this does not influence the game.
+5.	When playing a card with rank 2, the next player needs to take 2 new card from the card stack. 
+6.	When playing a card with rank 7, the player whose turn it is gets another turn. 
+7.	When playing a card with rank 8, the next player has to skip his turn.
+8.	“Joker” cards and card with rank 2 are allowed to be stacked. 
+For example:
+Player1: throws “Joker” card
+Player2: throws another “Joker” card
+Player1: throws rank 2 card
+Player2: grabs (5 + 5 + 2 =) 12 cards 
+9.	If you had to grab cards because of a “pest” card, then after you have grabbed them you get another turn. 
+If in this case the “Joker” is on top of the stack, you are allowed to throw any card on the stack no matter the rank or the suit
+10.	You are allowed to end with a “pest” card.
 
-Additional game rules
-* We make use of summing of "pestkaarten", which are the playing card with rank 2 and the joker. This means that when player 1 discards a joker, player 2 can (if he is in the possession of this card) discard a playing card with rank 2(or other "pestkaart") and does not need to take any cards from the playing stack. In this case player 1, if he/she does not posess any "pestkaarten" anymore, will need to take 7 new playing cards from the playing stack.
+“Pest” cards: rank 0/ “Joker”, rank 1/ “Ace”, rank 2, rank 7, and rank 8
+
+
+
 
 
