@@ -11,14 +11,29 @@ class StateInterface(PestenPlayer):
         self.pestkaarten_sum = pestkaarten_sum
         self.player_hand = CardStack()
         self.player_hand = self.determinization()
-        self.draw_stack = CardStack.standard() - self.hand - self.state.discard_stack - self.player_hand
+        self.draw_stack = CardStack.standard(2)
+        for card in list(self.hand):
+            if card in self.draw_stack:
+                self.draw_stack -= card
+        for card in list(self.state.discard_stack):
+            if card in self.draw_stack:
+                self.draw_stack -= card
+        for card in list(self.player_hand):
+            if card in self.draw_stack:
+                self.draw_stack -= card
         self.currentPlayer = 1
     
     def determinization(self):
         for player in self.state.players:
             if player.index == 1:
                 player_hand_est = CardStack()
-                sample_space = CardStack.standard() - self.hand - self.state.discard_stack
+                sample_space = CardStack.standard(2)
+                for card in list(self.hand):
+                    if card in sample_space:
+                        sample_space -= card
+                for card in list(self.state.discard_stack):
+                    if card in sample_space:
+                        sample_space -= card
                 for i in range(len(player.hand)):
                     card = random.choice(list(sample_space))
                     sample_space -= card
@@ -104,7 +119,16 @@ class StateInterface(PestenPlayer):
             self.state.discard_stack.clear()
             self.state.discard_stack += top_card
 
-            self.draw_stack = CardStack.standard() - self.hand - self.state.discard_stack - self.player_hand
+            self.draw_stack = CardStack.standard(2)
+            for card in list(self.hand):
+                if card in self.draw_stack:
+                    self.draw_stack -= card
+            for card in list(self.state.discard_stack):
+                if card in self.draw_stack:
+                    self.draw_stack -= card
+            for card in list(self.player_hand):
+                if card in self.draw_stack:
+                    self.draw_stack -= card
 
         for _ in range(amount):
             card = self.draw_stack.pop() # Will return UnknownCard
