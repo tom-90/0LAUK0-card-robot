@@ -2,4 +2,4 @@
 cd "$(dirname "$0")"
 export $(grep -v '^#' ../.env | xargs)
 
-tensorboard --logdir ../runs/detect/train5 --host 0.0.0.0
+tensorboard --logdir ../runs/detect/train7 --host 0.0.0.0

@@ -5,10 +5,12 @@ from pesten.types import PestenInputType
 from pesten.state import PestenGameState
 import threading
 from ultralytics.yolo.v8 import detect
+from itertools import combinations
 import os
 from webcam import WebcamSource
 import numpy as np
 from enum import Enum
+from time import sleep, time
 
 suit_map = {
     "r": 1, # Diamonds/ruiten
@@ -108,9 +110,8 @@ class ClassType(Enum):
         
 
 class Box():
-    ROLLING_AVERAGE_LENGTH = 20
+    ROLLING_AVERAGE_LENGTH = 50
     DISTANCE_THRESHOLD = 100
-    CONFIDENCE_THRESHOLD = 0.7
     REMOVAL_THRESHOLD = 0.4
     SIGNIFICANT_CONFIDENCE_CHANGE = 0.1
 
@@ -138,9 +139,6 @@ class Box():
     def should_remove(self):
         return len(self.confs) >= Box.ROLLING_AVERAGE_LENGTH and self.confidence < Box.REMOVAL_THRESHOLD
 
-    def should_include(self):
-        return self.confidence > Box.CONFIDENCE_THRESHOLD
-
     def is_same(self, xyxy: np.ndarray, type: ClassType):
         # Check if the provided xyxy is close enough to the stored p1 and p2 points and types match
         return self.type == type and np.linalg.norm(self.p1 - xyxy[0, 0:2]) < Box.DISTANCE_THRESHOLD and np.linalg.norm(self.p2 - xyxy[0, 2:4]) < Box.DISTANCE_THRESHOLD
@@ -148,10 +146,53 @@ class Box():
     @property
     def confidence(self):
         return sum(self.confs) / Box.ROLLING_AVERAGE_LENGTH
+    
+class GroupedBox():
+    DISTANCE_FACTOR = 750
+    CONFIDENCE_THRESHOLD = 0.75
+
+    def __init__(self, type: ClassType, boxes: list[Box]):
+        self.type = type
+        self.boxes = boxes
+        self.points = list(map(lambda box: (box.p1 + box.p2) / 2, boxes))
+
+    @property
+    def distance(self):
+        if len(self.points) < 2:
+            return 0
+        
+        distances = []
+        for combo in combinations(self.points, 2):
+            distances.append(np.linalg.norm(combo[0] - combo[1]))
+        return sum(distances) / len(distances)
+    
+    @property
+    def confidence(self):
+        if len(self.points) == 0:
+            return 0
+        elif(len(self.points) == 1):
+            return self.boxes[0].confidence
+        
+        confidences = list(map(lambda box: box.confidence, self.boxes))
+        return (sum(confidences) / len(confidences)) / (self.distance / GroupedBox.DISTANCE_FACTOR)
+    
+    def should_include(self):
+        return self.confidence > GroupedBox.CONFIDENCE_THRESHOLD
+    
+    @staticmethod
+    def from_boxes(boxes: list[Box]):
+        grouped = {}
+        for box in boxes:
+            if box.type not in grouped:
+                grouped[box.type] = []
+            grouped[box.type].append(box)
+        
+        return list(map(lambda type: GroupedBox(type, grouped[type]), grouped))
 
 class CameraInput(GameInput):
     state: PestenGameState
     boxes: list[Box]
+    grouped_boxes: list[GroupedBox]
     change_event: threading.Event
 
     def __init__(self, state):
@@ -177,6 +218,8 @@ class CameraInput(GameInput):
             'verbose': False,
             'model': os.path.abspath(os.path.join(os.path.realpath(__file__), '../../../../model/best_weights.pt'))
         })
+
+        prev_update = time()
 
         # The predictor function will keep predicting and returning values as we go
         for data in predictor(WebcamSource(os.getenv('WEBCAM_SOURCE'), os.getenv('WEBCAM_RESOLUTION'), predictor), stream=True):
@@ -224,9 +267,10 @@ class CameraInput(GameInput):
                     else:
                         changed = True
 
-            self.boxes = boxes
-
-            if changed:
+            if changed or time() - prev_update > 1:
+                prev_update = time()
+                self.boxes = boxes
+                self.grouped_boxes = GroupedBox.from_boxes(self.boxes)
                 self.change_event.set()
 
     def get_top_card(self):
@@ -240,6 +284,7 @@ class CameraInput(GameInput):
 
     def get_drawn_card(self):
         print("Waiting for drawn card...")
+        sleep(0.5)
         while True:
             self.change_event.wait()
             self.change_event.clear()
@@ -251,6 +296,7 @@ class CameraInput(GameInput):
             for card in cards:
                 if card != top_card and card not in hand:
                     print(f"Drawn card: {card}.")
+                    sleep(0.5)
                     print(f"Waiting for card to disappear from view...")
                     while True:
                         self.change_event.wait()
@@ -261,7 +307,36 @@ class CameraInput(GameInput):
                             return card
 
     def wait_for_shuffle(self):
-        input("Please shuffle the deck and press enter when you are ready to continue.")
+        # Wait until the draw pile is visible well enough
+        orig_draw_pile_conf = self.get_draw_pile_confidence()
+        while orig_draw_pile_conf < GroupedBox.CONFIDENCE_THRESHOLD:
+            print(1)
+
+            self.change_event.wait()
+            self.change_event.clear()
+            orig_draw_pile_conf = self.get_draw_pile_confidence()
+
+        # Wait until the visibility of the draw pile dropped
+        while orig_draw_pile_conf - self.get_draw_pile_confidence() < 0.1:
+            print(2)
+                
+            self.change_event.wait()
+            self.change_event.clear()
+
+        # Wait until the draw pile is visible well enough again
+        while self.get_draw_pile_confidence() < GroupedBox.CONFIDENCE_THRESHOLD:
+            print(3)
+
+            self.change_event.wait()
+            self.change_event.clear()
+
+        while True:
+            self.change_event.wait()
+            self.change_event.clear()
+
+            cards = self.get_visible_cards()
+            if self.state.get_top_card() in cards:
+                return
 
     def wait_for_top_card(self, card: Card):
         print(f"Waiting for top card to be {card}...")
@@ -271,38 +346,74 @@ class CameraInput(GameInput):
 
             cards = self.get_visible_cards()
             if card in cards:
-
                 return
     
     def wait_for_play_or_draw(self):
         if self.state.pestkaarten_sum > 0:
             print(f"You need to throw a 'pestkaart' or you will be forced to draw {self.state.pestkaarten_sum} new cards.")
 
-        orig_draw_pile_conf = self.get_draw_pile_confidence()
-        while True:
-            self.change_event.wait()
-            self.change_event.clear()
-
-            if orig_draw_pile_conf - self.get_draw_pile_confidence() > 0.1:
-                return None
-
+        def get_new_top_card():
             cards = self.get_visible_cards()
-            top_card = self.state.get_top_card()
+            discarded_cards = self.state.discard_stack
             for card in cards:
-                if card != top_card:
+                if card not in discarded_cards:
                     return card
+            return None
+
+        count = max(1, self.state.pestkaarten_sum)
+        for i in range(count):
+            sleep(1)
+            print(f"Possibly waiting for drawn card {i+1}/{count}...")
+            # Wait until the draw pile is visible well enough
+            orig_draw_pile_conf = self.get_draw_pile_confidence()
+            while orig_draw_pile_conf < GroupedBox.CONFIDENCE_THRESHOLD:
+                print(1)
+                top_card = get_new_top_card()
+                if top_card:
+                    return top_card
+
+                self.change_event.wait()
+                self.change_event.clear()
+                orig_draw_pile_conf = self.get_draw_pile_confidence()
+
+            # Wait until the visibility of the draw pile dropped
+            while orig_draw_pile_conf - self.get_draw_pile_confidence() < 0.1:
+                print(2)
+                top_card = get_new_top_card()
+                if top_card:
+                    return top_card
+                    
+                self.change_event.wait()
+                self.change_event.clear()
+
+            # Wait until the draw pile is visible well enough again
+            while self.get_draw_pile_confidence() < GroupedBox.CONFIDENCE_THRESHOLD:
+                print(3)
+                top_card = get_new_top_card()
+                if top_card:
+                    return top_card
+
+                self.change_event.wait()
+                self.change_event.clear()
+
+            print(4)
+            top_card = get_new_top_card()
+            if top_card:
+                return top_card
+
+        return None
 
     def get_visible_cards(self) -> list[Card]:
-        types: set[ClassType] = set()
-        for box in self.boxes:
-            if box.should_include() and box.type.is_card():
-                types.add(box.type)
-
-        return [type.to_card() for type in types]
+        return [
+            box.type.to_card() for box in filter(
+                lambda box: box.should_include() and box.type.is_card(),
+                sorted(self.grouped_boxes, key=lambda box: box.confidence, reverse=True)
+            )
+        ]
 
     def get_draw_pile_confidence(self) -> float:
         pile_box = None
-        for box in self.boxes:
+        for box in self.grouped_boxes:
             if box.type == ClassType.PILE_FACE_DOWN and (pile_box == None or box.confidence > pile_box.confidence):
                 pile_box = box
 

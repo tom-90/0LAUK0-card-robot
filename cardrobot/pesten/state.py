@@ -95,13 +95,13 @@ class PestenGameState(GameState):
         if not virtual:
             self.input(PestenInputType.WAIT_FOR_SHUFFLE)
 
-        top_card = self.state.discard_stack.pop()
-        count = len(self.state.discard_stack)
+        top_card = self.discard_stack.pop()
+        count = len(self.discard_stack)
 
-        self.state.discard_stack.clear()
-        self.state.discard_stack += top_card
+        self.discard_stack.clear()
+        self.discard_stack += top_card
 
-        self.state.draw_stack += [UnknownCard() for _ in range(count)]
+        self.draw_stack += [UnknownCard() for _ in range(count)]
 
     # returns whether the given card can be played in the current gamestate
     def is_valid_card(self, card: Card):

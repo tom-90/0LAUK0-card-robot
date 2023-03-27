@@ -54,9 +54,7 @@ if __name__ == "__main__":
     state.add_player(PestenRobotPlayer(state))
     state.add_player(PestenHumanPlayer(state))
 
-    # input = SavedTerminalInput(state, "saved_inputs.txt") Use this to load saved inputs
-    input = SavedTerminalInput(state)
-
+    state.use(CameraInput(state))
     state.use(TerminalInput(state))
     state.use(TerminalOutput(state))
     state.use(GUIOutput(state))
@@ -74,7 +72,5 @@ if __name__ == "__main__":
             sleep(1)
     except Exception as e:
         print("\nGame interrupted")
-
-    input.save("saved_inputs.txt")
 
     state.destroy()
