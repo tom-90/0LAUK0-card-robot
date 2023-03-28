@@ -28,7 +28,7 @@ class PestenGameState(GameState):
 
         self.discard_stack += self.input(PestenInputType.READ_TOP_CARD)
         self.draw_stack.pop()
-        while (self.get_top_card().rank_id in [0,2]):
+        while (self.get_top_card().rank_id in [0,1,2,7,8]):
             self.output(PestenOutputType.CANT_START_WITH_PESTKAART)
             self.discard_stack += self.input(PestenInputType.READ_TOP_CARD)
             self.draw_stack.pop()
@@ -72,7 +72,7 @@ class PestenGameState(GameState):
     # applies the special effect of the given card if it has any
     # returns whether the turn is over or not
     def apply_card_effect(self, card, virtual = False):
-        if (card.rank_id in [0,2]): # If chosen move is playing a "pestkaart"
+        if (card.rank_id in [0,2]): # If chosen move is playing a card that causes card-draw
             self.pestkaarten_sum += (5 if card.rank_id == 0 else 2) # Increase pestkaarten_sum accordingly
             if not virtual:
                 self.output(PestenOutputType.EFFECT_DRAW_CARDS, (5 if card.rank_id == 0 else 2))

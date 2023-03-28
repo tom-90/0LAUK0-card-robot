@@ -8,21 +8,24 @@ class TerminalOutput(GameOutput):
 
         self.register(PestenOutputType.CURRENT_DIFFICULTY, self.current_difficulty)
         self.register(PestenOutputType.CANT_START_WITH_PESTKAART, self.cant_start_with_pestkaart)
+
         self.register(PestenOutputType.PLAYER_TURN, self.player_turn)
         self.register(PestenOutputType.PLAYER_DRAWS, self.player_draws)
         self.register(PestenOutputType.PLAYER_PLAYS, self.player_plays)
         self.register(PestenOutputType.PLAYER_WON, self.player_won)
+
         self.register(PestenOutputType.EFFECT_DRAW_CARDS, self.effect_draw_cards)
         self.register(PestenOutputType.EFFECT_REVERSE_DIRECTION, self.effect_reverse_direction)
         self.register(PestenOutputType.EFFECT_EXTRA_TURN, self.effect_extra_turn)
         self.register(PestenOutputType.EFFECT_SKIP_TURN, self.effect_skip_turn)
+
         self.register(PestenOutputType.ROBOT_MOVE_STATS, self.robot_move_stats)
 
     def current_difficulty(self, difficulty: float):
-        print(f"The current difficulty is {difficulty}.")
+        print(f"The current difficulty is {difficulty}")
 
     def cant_start_with_pestkaart(self):
-        print("The starting card cannot be a pestkaart: Draw another card from the draw stack and place it on the discard stack.")
+        print("The starting card cannot be a 'pestkaart' (card with a special effect): Draw another card from the draw stack and place it on the discard stack.")
 
     def player_turn(self, player: PestenPlayer):
         print(f"It is {player}'s turn.")

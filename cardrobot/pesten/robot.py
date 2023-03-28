@@ -12,7 +12,7 @@ from pesten.interface import StateInterface
 # If 0 < difficulty < 1, the function gives a higher probability to the highest score 
 # If difficulty = 1, the function gives approximately a probability of ~1 to the highest score, and ~0 to all other scores
 def softmax_with_difficulty(scores, diff):
-    b_x = np.power(1.0 + (diff ** 1.5), scores - np.max(scores)) # Note to self: the power of the difficulty (>= 1) can be played with to change relative probabilities
+    b_x = np.power(1.0 + (diff ** 1.25), scores - np.max(scores)) # Note to self: the power of the difficulty (>= 1) can be played with to change relative probabilities
     return b_x / b_x.sum()
 
 class PestenRobotPlayer(PestenPlayer):
@@ -50,14 +50,14 @@ class PestenRobotPlayer(PestenPlayer):
                 # Penalize for having no valid moves in the resulting gamestate
                 - 10 * (0 if len(copied_player.get_valid_moves()) > 1 else 1) \
                 # Reward for again getting the next turn in the resulting gamestate
-                + 50 * (1 if next_player == copied_player else 0) \
+                + 5 * (1 if next_player == copied_player else 0) \
                 # If pestkaarten_sum is greater than zero before player has made its move, reward for playing a pestkaart.
-                + 10 * (1 if old_pestkaarten_sum > 0 and copied_state.pestkaarten_sum > old_pestkaarten_sum else 0) \
+                + 5 * (1 if old_pestkaarten_sum > 0 and copied_state.pestkaarten_sum > old_pestkaarten_sum else 0) \
                 # Penalize for playing a pestkaart when pestkaarten_sum is not greater than zero before player has made its move 
                 # and when next_player has relatively many cards left.
-                - 10 * (1 if old_pestkaarten_sum <= 0 and len(next_player.hand) > 4 else 0) \
-                # small reward for playing a non-standard card
-                + 5 * (1 if old_top_card != copied_state.get_top_card() and copied_state.get_top_card().rank_id in [0,1,2,7,8] else 0) \
+                - 10 * (1 if old_pestkaarten_sum <= 0 and next_player != copied_player and len(next_player.hand) > 4 else 0) \
+                # small reward for playing a card with a special effect
+                + 3 * (1 if old_top_card != copied_state.get_top_card() and copied_state.get_top_card().rank_id in [0,1,2,7,8] else 0) \
                 )
         return score
 

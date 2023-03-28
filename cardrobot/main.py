@@ -10,21 +10,27 @@ from pesten.inputs.camera import CameraInput
 from pesten.outputs.terminal import TerminalOutput
 from pesten.outputs.gui import GUIOutput
 from threading import Thread
-from time import sleep
 from pesten.types import PestenInputType, PestenOutputType
+import time
+import math
 
 # TODO: tune the delta difficulty to converge to the desired win ratio faster
-def new_difficulty(old_difficulty: float, real_win_ratio: float, desired_win_ratio: float, static_difficulty: bool = False) -> float:
+def new_difficulty(old_difficulty: float, real_win_ratio: float, gametime_s: float, static_difficulty: bool = False) -> float:
     difficulty = old_difficulty
     if not static_difficulty:
-        delta_difficulty = (real_win_ratio - desired_win_ratio) ** 3
-        difficulty = old_difficulty + 10 * delta_difficulty
+        # if the player wins more than 70% of the games, the difficulty should be decreased, else increased
+        winratio_deltadiff = 15 * (real_win_ratio - 0.7) ** 3
+        # if the player finished the game in less than 10 minutes, the difficulty should be increased more, else decreased
+        # the atan function is scaled to the range [-0.2, 0.2] and crosses the x-axis at 10 (minutes)
+        gametime_deltadiff = 0.2 * math.atan((gametime_s / 60.0) - 10.0) * (-2.0 / math.pi)
+
+        difficulty += winratio_deltadiff + gametime_deltadiff
 
     return min(1.0, max(0.0, difficulty))
 
-def playsession(state: PestenGameState):
-    robot_total_wins = 0
-    player_total_wins = 0
+def playsession(state: PestenGameState, robotwins=0, playerwins=0):
+    robot_total_wins = robotwins
+    player_total_wins = playerwins
     use_mcts = state.input(PestenInputType.USE_MCTS)
     difficulty = state.input(PestenInputType.STARTING_DIFFICULTY)
     
@@ -33,17 +39,18 @@ def playsession(state: PestenGameState):
         state.output(PestenOutputType.CURRENT_DIFFICULTY, difficulty)
 
         state.setup()
-
+        gamestarttime = time.time()
         winner = state.do_game(difficulty, use_mcts)
         if (winner.type == "robot"):
             robot_total_wins += 1
         else:
             player_total_wins += 1
 
+        gametime = time.time() - gamestarttime
         win_ratio = player_total_wins/(player_total_wins+robot_total_wins) if (player_total_wins+robot_total_wins) > 0 else 0
-        print(f"Player wins: {player_total_wins}, Robot wins: {robot_total_wins}, win ratio: {win_ratio}")
+        print(f"gametime: {gametime}, Player wins: {player_total_wins}, Robot wins: {robot_total_wins}, win ratio: {win_ratio}")
 
-        difficulty = new_difficulty(difficulty, win_ratio, 0.7, static_difficulty=False)
+        difficulty = new_difficulty(difficulty, win_ratio, gametime, static_difficulty=False)
 
         playsession_done = not state.input(PestenInputType.PLAY_AGAIN)
     return True
@@ -69,7 +76,7 @@ if __name__ == "__main__":
     
     try:
         while not playsession_done:
-            sleep(1)
+            time.sleep(1)
     except Exception as e:
         print("\nGame interrupted")
 

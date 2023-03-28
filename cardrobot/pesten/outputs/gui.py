@@ -26,14 +26,20 @@ class GUIOutput(GameOutput):
     def __init__(self, state):
         super().__init__(state)
 
+        self.register(PestenOutputType.CURRENT_DIFFICULTY, self.current_difficulty)
+        self.register(PestenOutputType.CANT_START_WITH_PESTKAART, self.cant_start_with_pestkaart)
+
         self.register(PestenOutputType.PLAYER_TURN, self.player_turn)
         self.register(PestenOutputType.PLAYER_DRAWS, self.player_draws)
         self.register(PestenOutputType.PLAYER_PLAYS, self.player_plays)
         self.register(PestenOutputType.PLAYER_WON, self.player_won)
+
         self.register(PestenOutputType.EFFECT_DRAW_CARDS, self.effect_draw_cards)
         self.register(PestenOutputType.EFFECT_REVERSE_DIRECTION, self.effect_reverse_direction)
         self.register(PestenOutputType.EFFECT_EXTRA_TURN, self.effect_extra_turn)
         self.register(PestenOutputType.EFFECT_SKIP_TURN, self.effect_skip_turn)
+
+        self.register(PestenOutputType.ROBOT_MOVE_STATS, self.robot_move_stats)
 
         self.thread = threading.Thread(target=self.init_ui)
         self.thread.daemon = True # Stop thread when main thread stops
@@ -192,6 +198,16 @@ class GUIOutput(GameOutput):
         # Schedule the new function to be called after 300ms 
         self.trobot_text_widget.after(300, change_color_to_black)
 
+    # TODO perhaps show the current difficulty level separately in the UI instead?
+    def current_difficulty(self, difficulty: float):
+        self.update_text_ui_extra(f"The robot's difficulty level is now {difficulty}")
+        pass
+
+    def cant_start_with_pestkaart(self):
+        self.update_text_ui_extra("The starting card cannot be a 'pestkaart' (card with a special effect):\n Draw another card from the draw stack and place it on the discard stack.")
+        self.update_ui()
+        pass
+
     def player_turn(self, player: PestenPlayer):
         # Empty the extra game state information text widget, because that information does not hold for the next turn
         self.update_text_ui_extra(" ")
@@ -232,6 +248,10 @@ class GUIOutput(GameOutput):
     def effect_skip_turn(self):
         next_player_turn = self.state.next_player()
         self.update_text_ui_extra(f"The turn of player {next_player_turn} is skipped.")
+        pass
+
+    # shows info about the robot's hand (should not be displayed in GUI so pass)
+    def robot_move_stats(self, player: PestenPlayer, valid_moves, move_scores, move_probs):
         pass
 
     def __deepcopy__(self, obj):
