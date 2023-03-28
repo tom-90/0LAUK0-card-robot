@@ -46,7 +46,7 @@ class GUIOutput(GameOutput):
         # Sets the icon of the window
         self.root.iconbitmap("cardrobot/Other images/App icon.ico")
 
-        self.root.geometry("900x500")
+        self.root.geometry("900x600")
         self.root.configure(background="green")
 
         # Create the top frame, containing the cards
@@ -69,10 +69,6 @@ class GUIOutput(GameOutput):
         discard_stack_frame = LabelFrame(top_frame, text="Discard stack", font = ("Arial", 14, 'bold'), border=0)
         discard_stack_frame.grid(row=0, column=4, padx=20, pady=40, ipadx=20)
 
-        # Create the frame for the text widget
-        user_information_widget = LabelFrame(bottom_frame, text="", border=0)
-        user_information_widget.pack()
-
         # Put cards in the frames, this is done by putting images into labels
         self.draw_stack_label = Label(draw_stack_frame, text="")
         self.draw_stack_label.pack(pady=20)
@@ -80,19 +76,39 @@ class GUIOutput(GameOutput):
         self.discard_stack_label = Label(discard_stack_frame, text="")
         self.discard_stack_label.pack(pady=20)
 
-        # Create label for the text widget
-        self.text_widget_label = Label(user_information_widget, text="The current game status:")
+        # Create the frame for the text widgets
+        game_information_frame = LabelFrame(bottom_frame, text="", border=0)
+        #game_information_frame.grid_rowconfigure(3, minsize=2) # Set size of row 3 to standard height of 2, row 3 is empty
+        game_information_frame.pack()
+
+        # Create label for the game status header text widget
+        self.text_widget_label = Label(game_information_frame, text="The current game status:")
         self.text_widget_label.grid(row=1) # pack()
         self.text_widget_label.config(font = ("Arial", 14, 'bold')) # specify font
 
-        # Create the text widgets
-        self.text_widget_turn = Label(user_information_widget, height = 2, width = 90) 
+        # Create the game status text widget labels
+        self.text_widget_turn = Label(game_information_frame, height = 2, width = 90) 
         self.text_widget_turn.config(text="", font = ("Arial", 12))
         self.text_widget_turn.grid(row=2) # pack()
 
-        self.text_widget_extra = Label(user_information_widget, height = 2, width = 90) 
+        self.text_widget_extra = Label(game_information_frame, height = 2, width = 90) 
         self.text_widget_extra.config(text="", font = ("Arial", 12))
         self.text_widget_extra.grid(row=4) # pack()
+
+        # Add empty row with background color green between game status information and robot'status information
+        self.empty_row = Label(game_information_frame, background = "green", height = 2, width = 90) 
+        self.empty_row.config(text="", font = ("Arial", 12))
+        self.empty_row.grid(row=5) # pack()
+
+        # Create label for the robot/instructions text header widget label
+        self.robot_text_label = Label(game_information_frame, text="The robot's status:")
+        self.robot_text_label.grid(row=6)
+        self.robot_text_label.config(font = ("Arial", 14, 'bold')) # specify font
+
+        # Create the text widget
+        self.trobot_text_widget = Label(game_information_frame, height = 2, width = 90) 
+        self.trobot_text_widget.config(text="", font = ("Arial", 12))
+        self.trobot_text_widget.grid(row=7)
         
         # Import the question_mark image using PhotoImage function
         question_image_file_path = os.path.abspath("cardrobot/Other images/question_mark.svg.png")
@@ -166,6 +182,15 @@ class GUIOutput(GameOutput):
             self.text_widget_extra.config(fg='black')
         # Schedule the new function to be called after 300ms 
         self.text_widget_extra.after(300, change_color_to_black)
+
+    # Updates text widget which shows the action which the robot is performing or the robot instructs the player to do 
+    def update_robot_text_ui(self, string):
+        self.trobot_text_widget.config(text=string, fg='red')
+         # Define a new function to change the color to black
+        def change_color_to_black():
+            self.trobot_text_widget.config(fg='black')
+        # Schedule the new function to be called after 300ms 
+        self.trobot_text_widget.after(300, change_color_to_black)
 
     def player_turn(self, player: PestenPlayer):
         # Empty the extra game state information text widget, because that information does not hold for the next turn
