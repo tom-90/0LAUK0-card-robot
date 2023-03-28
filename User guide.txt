@@ -1,28 +1,36 @@
 User-guide
-After setting up your camera, you’ll be asked to draw 7 cards which you can keep for your self and the robot will also draw 7 cards from the discard stack. As the robot arm has (not yet) been implemented the instructor will act as the robot arm. All the instructions will be displayed in the terminal, so the instructor simply needs to perform these and not think for its self. For instance, the instructor needs to act as the robot arm at the start by drawing 7 cards and showing them to the camera. Then, players will take turn in putting a valid card on the discard stack. The robot gets the first turn. Note that the instructor who needs to act as the robot arm needs to read from the terminal to know which card to throw on the discard stack as this choice can be different depending on the current win-ratio the human player is persisting. 
+Firstly, you have to set up the robot in front of you on a table or on another flat surface. Then, you have to set up the camera pointing down at the surface you will be playing, this camera can for instance be your own mobile phone. The camera needs to be placed such that it can both the draw stack and the discard stack in the same camera shot.
 
-In the “The current game status” text-box important information about the current game state will be displayed. You’ll be notified whose turn it currently is and will be updated about the effects of the cards that get played. The discard stack will simply display the card that is currently the top card of the discard stack in the physical game that is being played. Additionally, a question mark button is available which leads to a window explaining the usage of this product and a more detailed description of the game rules, which can be read below.
+When the set up has been done, the program has to be ran only once and then unlimited games can be played sequentially until the robot is turned off and with each game the difficulty of the robot will alter to get to a win-ratio of 70%. 
+
+In order to start a game, you need to place a deck of 52 playing cards in addition with two jokers all shuffled and upside down in the view of the camera. The robot will then using its robot arm reveal the first card of the discard stack. Thereafter, it will draw 7 cards and then you will need to do same. Subsequently, the robot will get the first turn and so the game starts.
+
+When you do not know what to do or what the robot is doing, you can simply look at the robot’s status information text box of the graphical user interface of the robot. Here, it will be displayed whether the robot is expecting you to perform a certain action, such as throwing a card, or whether the robot is currently busy with performing an action, such as obtaining a new card from the draw stack.
+
+In addition, the game status information text box of the graphical user interface of the robot will contain all the information you will need about the current status of the game you are playing. The first text bar will show whose turn it is at each point of time in the game and the second text bar will display information about the effects of the cards that get played when there are any.
+
+Apart from the text boxes, a digital representation of the draw and discard stack are visible on the graphical user interface of the robot and a question mark button is present. The question mark button pops up the user guide upon being clicked. Here, not only the whole process of using this robot is explained, but also the game rules of “Pesten”, which are used by the robot, have been stated explicitly such that the player can revise them at all times.
 
 Game rules
-1.	The first card is not allowed to be a “pest” card.
-So it is not allowed to be a “Joker”, an “Ace”, a rank 2, a rank 7 or a rank 8.
-2.	You may put a card with the same rank (0, 1, …, 13) or same suits (diamonds, hearts, spades or clubs) on top of the previous card. If you do not have such a card or do not wish to play it, you have to pick a card from the stack.
-3.	When playing a card with rank 0, the “Joker”, the next player needs to take 5 playing cards from the card stack. 
-4.	When playing a card with rank 1, the “Ace”, the direction is reversed. Note, when playing with two players, this does not influence the game.
-5.	When playing a card with rank 2, the next player needs to take 2 new card from the card stack. 
-6.	When playing a card with rank 7, the player whose turn it is gets another turn. 
-7.	When playing a card with rank 8, the next player has to skip his turn.
-8.	“Joker” cards and card with rank 2 are allowed to be stacked. 
+1. The first card is not allowed to be a “pest” card. So it is not allowed to be a “Joker”, an “Ace”, a rank 2, a rank 7 or a rank 8.
+2. You may put a card with the same rank (0, 1, …, 13) or same suits (diamonds, hearts, spades or clubs) on top of the previous card. If you do not have such a card or do not wish to play it, you have to pick a card from the stack.
+3. When playing a card with rank 0, the “Joker”, the next player needs to take 5 playing cards from the card stack. 
+4. When playing a card with rank 1, the “Ace”, the direction is reversed. Note, when playing with two players, this does not influence the game.
+5. When playing a card with rank 2, the next player needs to take 2 new card from the card stack. 
+6. When playing a card with rank 7, the player whose turn it is gets another turn. 
+7. When playing a card with rank 8, the next player has to skip his turn.
+8. “Joker” cards and card with rank 2 are allowed to be stacked. 
 For example:
 Player1: throws “Joker” card
 Player2: throws another “Joker” card
 Player1: throws rank 2 card
 Player2: grabs (5 + 5 + 2 =) 12 cards 
-9.	If you had to grab cards because of a “pest” card, then after you have grabbed them you get another turn. 
-If in this case the “Joker” is on top of the stack, you are allowed to throw any card on the stack no matter the rank or the suit
+9. If you had to grab cards because of a “pest” card, then after you have grabbed them you get another turn. If in this case the “Joker” is on top of the stack, you are allowed to throw any card on the stack no matter the rank or the suit
 10.	You are allowed to end with a “pest” card.
 
 “Pest” cards: rank 0/ “Joker”, rank 1/ “Ace”, rank 2, rank 7, and rank 8
+
+
 
 
 

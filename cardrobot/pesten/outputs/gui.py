@@ -147,7 +147,7 @@ class GUIOutput(GameOutput):
         # Make the headers of the text bold
         self.text.tag_configure("bold", font=("Arial", 14, "bold"))
         self.text.tag_add("bold", "1.0", "1.10")
-        self.text.tag_add("bold", "6.0", "6.10")
+        self.text.tag_add("bold", "14.0", "14.10")
 
     def update_ui(self):
         top_card = self.state.get_top_card()
