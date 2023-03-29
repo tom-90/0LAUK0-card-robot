@@ -109,6 +109,9 @@ class PestenRobotPlayer(PestenPlayer):
         self.use_mcts = use_mcts
         turn_over = False
         while not turn_over and not self.state.is_finished(True):
+            if len(self.state.draw_stack) == 0:
+                self.state.reshuffle()
+            
             if self.use_mcts:
                 initialState = StateInterface(self.state, self.hand, self.state.pestkaarten_sum)
                 searcher = mcts(timeLimit=1000)             # iterationLimit=500

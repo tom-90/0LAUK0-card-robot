@@ -11,7 +11,7 @@ class StateInterface(PestenPlayer):
         self.pestkaarten_sum = pestkaarten_sum
         self.player_hand = CardStack()
         self.player_hand = self.determinization()
-        self.draw_stack = CardStack.standard(2)
+        self.draw_stack = CardStack.standard(1)
         for card in list(self.hand):
             if card in self.draw_stack:
                 self.draw_stack -= card
@@ -27,7 +27,7 @@ class StateInterface(PestenPlayer):
         for player in self.state.players:
             if player.index == 1:
                 player_hand_est = CardStack()
-                sample_space = CardStack.standard(2)
+                sample_space = CardStack.standard(1)
                 for card in list(self.hand):
                     if card in sample_space:
                         sample_space -= card
@@ -119,7 +119,7 @@ class StateInterface(PestenPlayer):
             self.state.discard_stack.clear()
             self.state.discard_stack += top_card
 
-            self.draw_stack = CardStack.standard(2)
+            self.draw_stack = CardStack.standard(1)
             for card in list(self.hand):
                 if card in self.draw_stack:
                     self.draw_stack -= card

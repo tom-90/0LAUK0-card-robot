@@ -40,6 +40,7 @@ class GUIOutput(GameOutput):
         self.register(PestenOutputType.EFFECT_SKIP_TURN, self.effect_skip_turn)
 
         self.register(PestenOutputType.ROBOT_MOVE_STATS, self.robot_move_stats)
+        self.register(PestenOutputType.RESHUFFLE, self.reshuffle)
 
         self.thread = threading.Thread(target=self.init_ui)
         self.thread.daemon = True # Stop thread when main thread stops
@@ -50,7 +51,7 @@ class GUIOutput(GameOutput):
         self.root.title("A game of Pesten")
 
         # Sets the icon of the window
-        self.root.iconbitmap("cardrobot/Other images/App icon.ico")
+        # self.root.iconbitmap("cardrobot/Other images/App icon.ico")
 
         self.root.geometry("900x600")
         self.root.configure(background="green")
@@ -209,24 +210,36 @@ class GUIOutput(GameOutput):
         pass
 
     def player_turn(self, player: PestenPlayer):
-        # Empty the extra game state information text widget, because that information does not hold for the next turn
-        self.update_text_ui_extra(" ")
         # Update the player turn text widget with whose turn it currently is
-        self.update_text_ui_turn(f"It is {player}'s turn")
+        turn_info = f"It is {player}'s turn"
+
+        if self.state.pestkaarten_sum > 0:
+            turn_info + f". The player needs to throw a 'pestkaart' or you will be forced to draw {self.state.pestkaarten_sum} new cards."
+        elif player.type != "robot":
+            turn_info + f". You can play a card or draw a card."
+
+        self.update_text_ui_turn(turn_info)
         self.update_ui()
         pass
 
     def player_draws(self, player: PestenPlayer, amount: int):
+        if player.type == "robot":
+            self.update_text_ui_turn(f"The robot is now drawing {amount} card(s) from the draw stack.")
+        else:
+            self.update_text_ui_turn(f"You have drawn {amount} card(s) from the draw stack.")
+
+        self.update_text_ui_extra("")
         self.update_ui()
         pass
 
     def player_plays(self, player: PestenPlayer, card):
+        self.update_text_ui_extra("") # Empty state after card is played
         self.update_ui()
         pass
 
     def player_won(self, player: PestenPlayer):
         self.update_text_ui_turn(f"{player} has won the game!")
-        self.update_text_ui_extra(f"{player} has won the game!")
+        self.update_text_ui_extra("")
         pass
 
     def effect_draw_cards(self, amount: int): 
@@ -249,6 +262,11 @@ class GUIOutput(GameOutput):
         next_player_turn = self.state.next_player()
         self.update_text_ui_extra(f"The turn of player {next_player_turn} is skipped.")
         pass
+
+    def reshuffle(self):
+        self.update_text_ui_extra(f"Please reshuffle the deck of cards.")
+        pass
+
 
     # shows info about the robot's hand (should not be displayed in GUI so pass)
     def robot_move_stats(self, player: PestenPlayer, valid_moves, move_scores, move_probs):

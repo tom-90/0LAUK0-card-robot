@@ -16,10 +16,17 @@ class PestenHumanPlayer(PestenPlayer):
     def do_turn(self):
         turn_over = False
         while not turn_over and not self.state.is_finished(True):
+            if len(self.state.draw_stack) == 0:
+                self.state.reshuffle()
+
             self.state.output(PestenOutputType.PLAYER_TURN, self)
-            card = self.state.input(PestenInputType.WAIT_FOR_PLAY_OR_DRAW)
+            card, has_drawn = self.state.input(PestenInputType.WAIT_FOR_PLAY_OR_DRAW)
 
             if isinstance(card, Card):
+                if (not card.rank_id in [0,2] or has_drawn) and self.state.pestkaarten_sum > 0:
+                    self.draw_cards(self.state.pestkaarten_sum)
+                    self.state.pestkaarten_sum = 0
+
                 self.state.output(PestenOutputType.PLAYER_PLAYS, self, card)
 
                 self.hand.pop()

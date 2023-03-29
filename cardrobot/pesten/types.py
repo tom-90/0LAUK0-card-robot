@@ -27,6 +27,8 @@ class PestenOutputType(OutputType):
     EFFECT_EXTRA_TURN = 'effect_extra_turn'
     EFFECT_SKIP_TURN = 'effect_skip_turn'
 
+    RESHUFFLE = 'reshuffle'
+
     ROBOT_MOVE_STATS = 'robot_move_stats' # Debugging
 
 

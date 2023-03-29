@@ -110,7 +110,7 @@ class ClassType(Enum):
         
 
 class Box():
-    ROLLING_AVERAGE_LENGTH = 50
+    ROLLING_AVERAGE_LENGTH = 20
     DISTANCE_THRESHOLD = 100
     REMOVAL_THRESHOLD = 0.4
     SIGNIFICANT_CONFIDENCE_CHANGE = 0.1
@@ -148,8 +148,9 @@ class Box():
         return sum(self.confs) / Box.ROLLING_AVERAGE_LENGTH
     
 class GroupedBox():
-    DISTANCE_FACTOR = 750
-    CONFIDENCE_THRESHOLD = 0.75
+    DISTANCE_FACTOR = 1500
+    CARD_CONFIDENCE_THRESHOLD = 1.2
+    PILE_CONFIDENCE_THRESHOLD = 0.75
 
     def __init__(self, type: ClassType, boxes: list[Box]):
         self.type = type
@@ -177,7 +178,10 @@ class GroupedBox():
         return (sum(confidences) / len(confidences)) / (self.distance / GroupedBox.DISTANCE_FACTOR)
     
     def should_include(self):
-        return self.confidence > GroupedBox.CONFIDENCE_THRESHOLD
+        if self.type.is_card():
+            return self.confidence > GroupedBox.CARD_CONFIDENCE_THRESHOLD
+        else:
+            return self.confidence > GroupedBox.PILE_CONFIDENCE_THRESHOLD
     
     @staticmethod
     def from_boxes(boxes: list[Box]):
@@ -291,10 +295,10 @@ class CameraInput(GameInput):
 
             cards = self.get_visible_cards()
             hand = self.state.get_current_player().hand
-            top_card = self.state.get_top_card()
+            discard_stack = self.state.discard_stack
 
             for card in cards:
-                if card != top_card and card not in hand:
+                if (card not in hand and card not in discard_stack):
                     print(f"Drawn card: {card}.")
                     sleep(0.5)
                     print(f"Waiting for card to disappear from view...")
@@ -309,24 +313,18 @@ class CameraInput(GameInput):
     def wait_for_shuffle(self):
         # Wait until the draw pile is visible well enough
         orig_draw_pile_conf = self.get_draw_pile_confidence()
-        while orig_draw_pile_conf < GroupedBox.CONFIDENCE_THRESHOLD:
-            print(1)
-
+        while orig_draw_pile_conf < GroupedBox.PILE_CONFIDENCE_THRESHOLD:
             self.change_event.wait()
             self.change_event.clear()
             orig_draw_pile_conf = self.get_draw_pile_confidence()
 
         # Wait until the visibility of the draw pile dropped
-        while orig_draw_pile_conf - self.get_draw_pile_confidence() < 0.1:
-            print(2)
-                
+        while orig_draw_pile_conf - self.get_draw_pile_confidence() < 0.1:                
             self.change_event.wait()
             self.change_event.clear()
 
         # Wait until the draw pile is visible well enough again
-        while self.get_draw_pile_confidence() < GroupedBox.CONFIDENCE_THRESHOLD:
-            print(3)
-
+        while self.get_draw_pile_confidence() < GroupedBox.PILE_CONFIDENCE_THRESHOLD:
             self.change_event.wait()
             self.change_event.clear()
 
@@ -356,21 +354,21 @@ class CameraInput(GameInput):
             cards = self.get_visible_cards()
             discarded_cards = self.state.discard_stack
             for card in cards:
-                if card not in discarded_cards:
+                if (card not in discarded_cards):
                     return card
             return None
 
         count = max(1, self.state.pestkaarten_sum)
+        sleep(1)
         for i in range(count):
             sleep(1)
             print(f"Possibly waiting for drawn card {i+1}/{count}...")
             # Wait until the draw pile is visible well enough
             orig_draw_pile_conf = self.get_draw_pile_confidence()
-            while orig_draw_pile_conf < GroupedBox.CONFIDENCE_THRESHOLD:
-                print(1)
+            while orig_draw_pile_conf < GroupedBox.PILE_CONFIDENCE_THRESHOLD:
                 top_card = get_new_top_card()
                 if top_card:
-                    return top_card
+                    return top_card, i > 0
 
                 self.change_event.wait()
                 self.change_event.clear()
@@ -378,30 +376,27 @@ class CameraInput(GameInput):
 
             # Wait until the visibility of the draw pile dropped
             while orig_draw_pile_conf - self.get_draw_pile_confidence() < 0.1:
-                print(2)
                 top_card = get_new_top_card()
                 if top_card:
-                    return top_card
+                    return top_card, i > 0
                     
                 self.change_event.wait()
                 self.change_event.clear()
 
             # Wait until the draw pile is visible well enough again
-            while self.get_draw_pile_confidence() < GroupedBox.CONFIDENCE_THRESHOLD:
-                print(3)
+            while self.get_draw_pile_confidence() < GroupedBox.PILE_CONFIDENCE_THRESHOLD:
                 top_card = get_new_top_card()
                 if top_card:
-                    return top_card
+                    return top_card, i > 0
 
                 self.change_event.wait()
                 self.change_event.clear()
 
-            print(4)
             top_card = get_new_top_card()
             if top_card:
-                return top_card
+                return top_card, i > 0
 
-        return None
+        return None, True
 
     def get_visible_cards(self) -> list[Card]:
         return [

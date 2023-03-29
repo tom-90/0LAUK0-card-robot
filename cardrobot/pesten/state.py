@@ -30,7 +30,10 @@ class PestenGameState(GameState):
         self.draw_stack.pop()
         while (self.get_top_card().rank_id in [0,1,2,7,8]):
             self.output(PestenOutputType.CANT_START_WITH_PESTKAART)
-            self.discard_stack += self.input(PestenInputType.READ_TOP_CARD)
+            new_card = self.get_top_card()
+            while new_card == self.get_top_card():
+                new_card = self.input(PestenInputType.READ_TOP_CARD)
+            self.discard_stack += new_card
             self.draw_stack.pop()
 
         self.pestkaarten_sum = 0
@@ -93,6 +96,7 @@ class PestenGameState(GameState):
     def reshuffle(self, virtual = False):
         # wait until all cards from the discard stack except the top card are shuffled and added to the draw stack
         if not virtual:
+            self.output(PestenOutputType.RESHUFFLE)
             self.input(PestenInputType.WAIT_FOR_SHUFFLE)
 
         top_card = self.discard_stack.pop()

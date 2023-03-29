@@ -19,6 +19,8 @@ class TerminalOutput(GameOutput):
         self.register(PestenOutputType.EFFECT_EXTRA_TURN, self.effect_extra_turn)
         self.register(PestenOutputType.EFFECT_SKIP_TURN, self.effect_skip_turn)
 
+        self.register(PestenOutputType.RESHUFFLE, self.reshuffle)
+
         self.register(PestenOutputType.ROBOT_MOVE_STATS, self.robot_move_stats)
 
     def current_difficulty(self, difficulty: float):
@@ -55,6 +57,9 @@ class TerminalOutput(GameOutput):
     
     def effect_skip_turn(self):
         print(f"The next player is forced to skip their turn.")
+
+    def reshuffle(self):
+        print("The draw stack has to be reshuffled.")
 
     def robot_move_stats(self, player: PestenPlayer, valid_moves, move_scores, move_probs):
         # Debugging info

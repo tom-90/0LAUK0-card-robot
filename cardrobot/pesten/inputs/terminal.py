@@ -96,11 +96,11 @@ class TerminalInput(GameInput):
         while card is None:
             response = input(f"Play a card and enter it here, or press enter if you want to draw {to_draw} card(s): ")
             if response == "":
-                return None
+                return None, True
 
             card = self.input_to_card(response)
 
-        return card
+        return card, False
     
     def play_again(self):
         while True:
