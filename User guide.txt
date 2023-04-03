@@ -5,30 +5,35 @@ When the set up has been done, the program has to be ran only once and then unli
 
 In order to start a game, you need to place a deck of 52 playing cards in addition with two jokers all shuffled and upside down in the view of the camera. The robot will then using its robot arm reveal the first card of the discard stack. Thereafter, it will draw 7 cards and then you will need to do same. Subsequently, the robot will get the first turn and so the game starts.
 
-When you do not know what to do or what the robot is doing, you can simply look at the robot’s status information text box of the graphical user interface of the robot. Here, it will be displayed whether the robot is expecting you to perform a certain action, such as throwing a card, or whether the robot is currently busy with performing an action, such as obtaining a new card from the draw stack.
+When you do not know what to do or what the robot is doing, you can simply look at the robot’s status information text box of the graphical user interface of the robot. Here, it will be displayed whether the robot is expecting you to perform a certain action, such as throwing a card, or whether the robot is currently busy with performing an action, such as obtaining a new card from the draw stack. Note that the functionality of this text widget has not been put to use, as a physical robot (arm) is not currently part of the prototype and hence the user does not need to wait for the robot to finish performing a certain action for instance.
 
 In addition, the game status information text box of the graphical user interface of the robot will contain all the information you will need about the current status of the game you are playing. The first text bar will show whose turn it is at each point of time in the game and the second text bar will display information about the effects of the cards that get played when there are any.
 
 Apart from the text boxes, a digital representation of the draw and discard stack are visible on the graphical user interface of the robot and a question mark button is present. The question mark button pops up the user guide upon being clicked. Here, not only the whole process of using this robot is explained, but also the game rules of “Pesten”, which are used by the robot, have been stated explicitly such that the player can revise them at all times.
 
 Game rules
-1. The first card is not allowed to be a “pest” card. So it is not allowed to be a “Joker”, an “Ace”, a rank 2, a rank 7 or a rank 8.
-2. You may put a card with the same rank (0, 1, …, 13) or same suits (diamonds, hearts, spades or clubs) on top of the previous card. If you do not have such a card or do not wish to play it, you have to pick a card from the stack.
-3. When playing a card with rank 0, the “Joker”, the next player needs to take 5 playing cards from the card stack. 
-4. When playing a card with rank 1, the “Ace”, the direction is reversed. Note, when playing with two players, this does not influence the game.
-5. When playing a card with rank 2, the next player needs to take 2 new card from the card stack. 
-6. When playing a card with rank 7, the player whose turn it is gets another turn. 
-7. When playing a card with rank 8, the next player has to skip his turn.
-8. “Joker” cards and card with rank 2 are allowed to be stacked. 
+1. Everybody starts with 7 cards
+2. The first card is not allowed to be a “pest” card. So it is not allowed to be a “Joker”, an “Ace”, a rank 2, a rank 7 or a rank 8. If it is a “pest” card put a new card on top of it from the stack until there is no “pest” card on top.
+3. You may put a card with the same rank (0, 1, …, 13) or same suits (diamonds, hearts, spades or clubs) on top of the previous card. If you do not have such a card or do not wish to play it, you have to pick a card from the stack.
+4. When playing a card with rank 0, the “Joker”, the next player needs to take 5 playing cards from the card stack. 
+5. When playing a card with rank 1, the “Ace”, the direction is reversed.
+6. When playing a card with rank 2, the next player needs to take 2 new card from the card stack. 
+7. When playing a card with rank 7, the player whose turn it is gets another turn. 
+8. When playing a card with rank 8, the next player has to skip his turn.
+9. “Joker” cards and card with rank 2 are allowed to be stacked. 
 For example:
 Player1: throws “Joker” card
-Player2: throws another “Joker” card
-Player1: throws rank 2 card
-Player2: grabs (5 + 5 + 2 =) 12 cards 
-9. If you had to grab cards because of a “pest” card, then after you have grabbed them you get another turn. If in this case the “Joker” is on top of the stack, you are allowed to throw any card on the stack no matter the rank or the suit
-10.	You are allowed to end with a “pest” card.
+Player2: throws rank 2 card
+Player1: throws another “Joker” card
+Player2: grabs (5 + 2 + 5 =) 12 cards 
+10. If you had to grab cards because of a “pest” card, then after you have grabbed them you get another turn. If in this case the “Joker” is on top of the stack, you are allowed to throw any card on the stack no matter the rank or the suit
+11. You are allowed to end with a “pest” card.
 
 “Pest” cards: rank 0/ “Joker”, rank 1/ “Ace”, rank 2, rank 7, and rank 8
+
+
+
+
 
 
 
