@@ -19,10 +19,12 @@ def new_difficulty(old_difficulty: float, real_win_ratio: float, gametime_s: flo
     difficulty = old_difficulty
     if not static_difficulty:
         # note that the difficulty changes at most 0.3 per game
+
         # if the player wins more than 70% of the games, the difficulty should be decreased, else increased
-        winratio_deltadiff = 0.2 * math.atan(real_win_ratio - 0.7) * (2.0 / math.pi)
-        # if the player finished the game in less than 10 minutes, the difficulty should be increased more, else decreased
-        # the atan function is scaled to the range [-0.1, 0.1] and crosses the x-axis at 5 (minutes)
+        # this atan function is scaled to the range [-0.2, 0.2] and crosses the x-axis at 0.7
+        winratio_deltadiff = 0.2 * math.atan(5 * (real_win_ratio - 0.7)) * (2.0 / math.pi) # note to self: increase multiplier inside atan to strengthen the change
+        # if the player finished the game in less than 5 minutes, the difficulty should be increased more, else decreased
+        # this atan function is scaled to the range [-0.1, 0.1] and crosses the x-axis at 300 sec (5 minutes)
         gametime_deltadiff = 0.1 * math.atan((gametime_s / 60.0) - 5.0) * (-2.0 / math.pi)
 
         difficulty += winratio_deltadiff + gametime_deltadiff
