@@ -34,7 +34,7 @@ def new_difficulty(old_difficulty: float, real_win_ratio: float, gametime_s: flo
 def playsession(state: PestenGameState, robotwins=0, playerwins=0):
     robot_total_wins = robotwins
     player_total_wins = playerwins
-    use_mcts = state.input(PestenInputType.USE_MCTS)
+    use_mcts = False
     difficulty = state.input(PestenInputType.STARTING_DIFFICULTY)
     
     global playsession_done
