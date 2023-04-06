@@ -20,6 +20,19 @@ All source code for the program is located in the `cardrobot` folder. The `model
 
 To execute the program, run `python cardrobot/main.py` from the root folder.
 
+The program can further be configured and customzied by adjusting the lines in `cardrobot/main.py`. By changing the following lines, the camera can be disabled (to play only via the terminal), or the GUI can be disabled (to view data only via the terminal). It is also possible to add a different combination of players.
+
+```python
+state.add_player(PestenRobotPlayer(state))
+state.add_player(PestenHumanPlayer(state))
+
+state.use(CameraInput(state))
+state.use(TerminalInput(state))
+state.use(TerminalOutput(state))
+state.use(GUIOutput(state))
+```
+
+The concept of this project was to create software that could later be attached to a physical robot that could be used to move the cards. However, this has not been implemented. Currently, a human should follow the instructions sent to the terminal and act as the robot would. The system is set-up  in a modular way such that an additional `RobotOutput` could be programmed at a future date.
 
 ## 'Pesten' rules
 
@@ -49,6 +62,3 @@ Additional rules:
   This means that when player 1 discards a joker, player 2 can (if he is in the possession of this card) discard a playing card with rank 2(or other "pestkaart") 
   and does not need to take any cards from the playing stack.
   In this case player 1, if he/she does not posess any "pestkaarten" anymore, will need to take 7 new playing cards from the playing stack.
-
-TODO:
-* can immediately place card after drawing it? (currently ends the turn, unless forced to draw from 'pestkaart')
